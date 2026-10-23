@@ -28,6 +28,7 @@ import 'package:wger/core/widgets/dashboard/widgets/routines.dart';
 import 'package:wger/core/widgets/dashboard/widgets/trophies.dart';
 import 'package:wger/core/widgets/dashboard/widgets/weight.dart';
 import 'package:wger/l10n/generated/app_localizations.dart';
+import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -74,7 +75,47 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: MainAppBar(AppLocalizations.of(context).labelDashboard),
-      body: Center(
+      body: Column(
+        children: [
+          FutureBuilder<MeuFitOnboardingProfile?>(
+            future: MeuFitOnboardingStorage().load(),
+            builder: (context, snapshot) {
+              final profile = snapshot.data;
+              return Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF242424),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('MEU FIT · SEU PAINEL',
+                      style: TextStyle(color: Color(0xFFC9F31D),
+                        fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text(profile == null
+                      ? 'Acompanhe sua evolução'
+                      : 'Objetivo: ${switch (profile.goal) {
+                          'ganhar_massa' => 'Ganhar massa muscular',
+                          'manter_forma' => 'Manter a forma',
+                          'flexibilidade' => 'Flexibilidade e mobilidade',
+                          _ => 'Emagrecimento',
+                        }}',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    if (profile != null) ...[
+                      const SizedBox(height: 8),
+                      Text('Meta: ${profile.daysPerWeek} dias de treino por semana'),
+                      Text('Peso inicial: ${profile.weightKg.toStringAsFixed(1)} kg'),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+          Expanded(child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: MATERIAL_LG_BREAKPOINT),
           child: isMobile
@@ -95,6 +136,8 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                 ),
         ),
+          ),
+        ],
       ),
     );
   }
