@@ -183,7 +183,7 @@
   "@newEntry": {
     "description": "Title when adding a new entry such as a weight or log entry"
   },
-  "addSet": "Adicionar séries",
+  "addSet": "Adicionar série",
   "@addSet": {
     "description": "Label for the button that adds a set (to a workout day)"
   },
@@ -196,7 +196,7 @@
     "description": "Name for a workout or nutritional plan"
   },
   "percentEnergy": "Porcentagem de energia",
-  "searchNamesInEnglish": "Procure também nomes em inglês",
+  "searchNamesInEnglish": "Pesquisar também pelos nomes em inglês",
   "exercise": "Exercício",
   "@exercise": {
     "description": "An exercise for a workout"
@@ -353,7 +353,7 @@
   "@weekAverage": {
     "description": "Header for the column of '7 day average' nutritional values, i.e. what was logged last week"
   },
-  "labelWorkoutPlan": "Plano de treino",
+  "labelWorkoutPlan": "Ficha de treino",
   "@labelWorkoutPlan": {
     "description": "Title for screen workout plan"
   },
@@ -394,7 +394,7 @@
   "@noMatchingExerciseFound": {
     "description": "Message returned if no exercises match the searched string"
   },
-  "selectExercise": "Por favor, selecione um exercício",
+  "selectExercise": "Selecione um exercício",
   "@selectExercise": {
     "description": "Error message when the user hasn't selected an exercise in the form"
   },
@@ -402,7 +402,7 @@
   "@enterValidNumber": {
     "description": "Error message when the user has submitted an invalid number (e.g. '3,.,.,.')"
   },
-  "baseNameEnglish": "Todos os exercícios necessitam de um nome base em inglês",
+  "baseNameEnglish": "Nome-base do exercício em inglês (obrigatório no catálogo internacional)",
   "labelBottomNavWorkout": "Treino",
   "@labelBottomNavWorkout": {
     "description": "Label used in bottom navigation, use a short word"
@@ -501,9 +501,9 @@
   "add_exercise_image_license": "As imagens devem ser compatíveis com a licença CC BY SA. Em caso de dúvida, faça upload apenas de fotos que você mesmo tenha tirado.",
   "next": "Próximo",
   "settingsCacheTitle": "Cache",
-  "settingsExerciseCacheDescription": "Cache do exercício",
+  "settingsExerciseCacheDescription": "Dados de exercícios armazenados no aparelho",
   "settingsCacheDeletedSnackbar": "Cache limpa com sucesso",
-  "translateExercise": "Traduza este exercício agora",
+  "translateExercise": "Adicionar tradução para português",
   "contributeExerciseWarning": "Você só pode contribuir com exercícios se sua conta tiver mais de {days} dias e se você tiver verificado seu e-mail",
   "@contributeExerciseWarning": {
     "description": "Number of days before which a person can add exercise",
@@ -527,7 +527,7 @@
   },
   "verifiedEmailReason": "Você precisa verificar seu e-mail para contribuir com exercícios",
   "alternativeNames": "Nomes alternativos",
-  "baseData": "Fundamentos em inglês",
+  "baseData": "Dados originais em inglês",
   "@baseData": {
     "description": "The base data for an exercise such as category, trained muscles, etc."
   },
@@ -805,8 +805,8 @@
   "@apiTokenValidChars": {
     "description": "Error message when the user tries to input a API key with forbidden characters"
   },
-  "routines": "Rotinas",
-  "newRoutine": "Nova rotina",
+  "routines": "Fichas de treino",
+  "newRoutine": "Nova ficha de treino",
   "noRoutines": "Você ainda não tem fichas de treino",
   "restTime": "Tempo de descanso",
   "sets": "Séries",
@@ -840,8 +840,8 @@
   "selectAvailablePlates": "Selecione os pesos disponíveis",
   "barWeight": "Peso da barra",
   "useColors": "Use cores",
-  "needsLogsToAdvanceHelp": "Selecione se deseja que a rotina de treino avance para o próximo dia agendado somente se você cadastrou o dia de treino",
-  "routineDays": "Dias de treino",
+  "needsLogsToAdvanceHelp": "Avançar para o próximo treino somente depois de registrar o treino atual",
+  "routineDays": "Dias da ficha de treino",
   "resultingRoutine": "Treino resultante",
   "yourCurrentNutritionPlanHasNoMealsDefinedYet": "Seu plano nutricional não tem refeições definidas",
   "@yourCurrentNutritionPlanHasNoMealsDefinedYet": {
@@ -869,7 +869,7 @@
   "others": "Outros",
   "fitInWeek": "Cronograma semanal fixo",
   "fitInWeekHelp": "Se ligado, os dias vão se repetir semanalmente, caso contrário os dias seguirão sequencialmente se considerar o começo de uma nova semana.",
-  "addSuperset": "Adicionar superséries",
+  "addSuperset": "Adicionar supersérie",
   "setHasProgression": "A série tem progressão",
   "setHasProgressionWarning": "No momento, nem todas as configurações das séries podem ser editadas no aplicativo. Para configurar a progressão automática, use a versão web.",
   "setHasNoExercises": "Esta série ainda não tem exercícios!",
@@ -896,7 +896,7 @@
   "impressionNeutral": "Neutra",
   "impressionBad": "Ruim",
   "gymModeShowExercises": "Mostrar páginas de visão geral dos exercícios",
-  "gymModeShowTimer": "Mostrar cronômetro entre séries",
+  "gymModeShowTimer": "Mostrar cronômetro de descanso entre séries",
   "gymModeTimerType": "Tipo de temporizador",
   "gymModeTimerTypeHelText": "Se uma série tiver tempo de pausa, sempre será usada uma contagem regressiva.",
   "countdown": "Contagem regressiva",
@@ -1057,7 +1057,7 @@
       }
     }
   },
-  "searchLanguageEnglish": "Idioma atual ({lang}) e inglês",
+  "searchLanguageEnglish": "Português ({lang}) e inglês",
   "@searchLanguageEnglish": {
     "type": "text",
     "placeholders": {
