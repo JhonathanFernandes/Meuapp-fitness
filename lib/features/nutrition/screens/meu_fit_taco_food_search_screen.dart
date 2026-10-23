@@ -339,7 +339,7 @@ class _MeuFitTacoFoodSearchScreenState
                       child: ListTile(
                         title: Text((entry['name'] ?? 'Alimento').toString()),
                         subtitle: Text(
-                          '${_loggedNumber(entry['grams'], 'g')} · $dateLabel\\n'
+                          '${_loggedNumber(entry['grams'], 'g')} · $dateLabel\n'
                           '${_loggedNumber(entry['energyKcal'], 'kcal')} · '
                           'P ${_loggedNumber(entry['proteinG'], 'g')} · '
                           'C ${_loggedNumber(entry['carbohydrateG'], 'g')} · '
@@ -378,7 +378,7 @@ class _MeuFitTacoFoodSearchScreenState
                 const Text(
                   'Referência: TACO, 4ª edição (NEPA/UNICAMP). Os valores são por '
                   '100 g da parte comestível; a porção é calculada proporcionalmente. '
-                  'Este recurso consulta dados e ainda não grava o alimento no diário.',
+                  'Os registros ficam salvos localmente neste aparelho.',
                   style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
