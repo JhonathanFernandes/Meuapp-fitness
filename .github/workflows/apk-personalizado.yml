@@ -43,8 +43,8 @@ jobs:
       - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
         with:
-          name: meu-app-fitness-android-debug
+          name: meu-fitness
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
 
-# Recompilacao manual do APK com as ultimas alteracoes do aplicativo.
+# Nome curto do artefato APK: meu-fitness.
