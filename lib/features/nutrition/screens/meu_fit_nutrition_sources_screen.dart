@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wger/features/nutrition/screens/meu_fit_taco_food_search_screen.dart';
 
 /// Consulta a base oficial da TBCA sem copiar nem redistribuir seus dados.
 class MeuFitNutritionSourcesScreen extends StatefulWidget {
@@ -71,6 +72,19 @@ class _MeuFitNutritionSourcesScreenState
           const Text(
             'Pesquise na base oficial da TBCA por nome ou tipo de preparo. '
             'A consulta abre os resultados publicados pela Universidade de São Paulo.',
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const MeuFitTacoFoodSearchScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.restaurant_menu),
+              label: const Text('Pesquisar nutrientes no aplicativo'),
+            ),
           ),
           const SizedBox(height: 14),
           TextField(
