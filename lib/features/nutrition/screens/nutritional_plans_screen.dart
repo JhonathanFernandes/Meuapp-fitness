@@ -21,6 +21,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:wger/core/form_screen.dart';
 import 'package:wger/core/wide_screen_wrapper.dart';
 import 'package:wger/features/nutrition/screens/ingredients_screen.dart';
+import 'package:wger/features/nutrition/screens/meu_fit_nutrition_sources_screen.dart';
 import 'package:wger/features/nutrition/widgets/forms.dart';
 import 'package:wger/features/nutrition/widgets/nutritional_plans_list.dart';
 import 'package:wger/l10n/generated/app_localizations.dart';
@@ -74,7 +75,23 @@ class NutritionalPlansScreen extends ConsumerWidget {
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
-      body: const WidescreenWrapper(child: NutritionalPlansList()),
+      body: Column(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+          child: Card(
+            color: const Color(0xFF242424),
+            child: ListTile(
+              leading: const Icon(Icons.menu_book, color: Color(0xFFC9F31D)),
+              title: const Text('Alimentação brasileira'),
+              subtitle: const Text('Consulte TBCA, TACO e Guia Alimentar; veja a origem dos dados.'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.push(context, MaterialPageRoute<void>(
+                builder: (_) => const MeuFitNutritionSourcesScreen())),
+            ),
+          ),
+        ),
+        const Expanded(child: WidescreenWrapper(child: NutritionalPlansList())),
+      ]),
     );
   }
 }
