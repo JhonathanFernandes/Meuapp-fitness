@@ -43,6 +43,11 @@ class DashboardTrophiesWidget extends ConsumerWidget {
         children: [
           if (trophiesState.nonPrTrophies.isEmpty)
             Card(
+              color: const Color(0xFF242424),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xFF383838)),
+              ),
               child: Column(
                 children: [
                   ListTile(
