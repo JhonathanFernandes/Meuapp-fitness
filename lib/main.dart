@@ -61,6 +61,8 @@ import 'package:wger/features/measurements/screens/measurement_categories_screen
 import 'package:wger/features/measurements/screens/measurement_category_sort_screen.dart';
 import 'package:wger/features/measurements/screens/measurement_entries_screen.dart';
 import 'package:wger/features/measurements/screens/weight_screen.dart';
+import 'package:wger/features/onboarding/meu_fit_onboarding_screen.dart';
+import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 import 'package:wger/features/nutrition/screens/ingredient_detail_screen.dart';
 import 'package:wger/features/nutrition/screens/ingredients_screen.dart';
 import 'package:wger/features/nutrition/screens/log_meal_screen.dart';
@@ -189,7 +191,7 @@ class MainApp extends ConsumerWidget {
   Widget _getHomeScreen(AuthState auth) {
     switch (auth.status) {
       case AuthStatus.loggedIn:
-        return const HomeTabsScreen();
+        return const MeuFitFirstAccessGate();
       case AuthStatus.appUpdateRequired:
         return const UpdateAppScreen();
       case AuthStatus.serverUpdateRequired:
@@ -260,7 +262,7 @@ class MainApp extends ConsumerWidget {
           ),
           data: (authState) {
             return MaterialApp(
-              title: 'wger',
+              title: 'Meu Fit',
               navigatorKey: navigatorKey,
               scaffoldMessengerKey: scaffoldMessengerKey,
               scrollBehavior: const WgerScrollBehavior(),
@@ -310,6 +312,59 @@ class MainApp extends ConsumerWidget {
               supportedLocales: AppLocalizations.supportedLocales,
             );
           },
+        );
+      },
+    );
+  }
+}
+
+
+/// Exibe o cadastro somente quando ainda não existe perfil local salvo.
+/// Mantém as rotas e o fluxo de autenticação originais do wger.
+class MeuFitFirstAccessGate extends StatefulWidget {
+  const MeuFitFirstAccessGate({super.key});
+
+  @override
+  State<MeuFitFirstAccessGate> createState() => _MeuFitFirstAccessGateState();
+}
+
+class _MeuFitFirstAccessGateState extends State<MeuFitFirstAccessGate> {
+  late Future<MeuFitOnboardingProfile?> _profile;
+  bool _completed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _profile = MeuFitOnboardingStorage().load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_completed) return const HomeTabsScreen();
+    return FutureBuilder<MeuFitOnboardingProfile?>(
+      future: _profile,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const SplashScreen();
+        }
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                const Text('Não foi possível carregar seu perfil.'),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _profile = MeuFitOnboardingStorage().load();
+                  }),
+                  child: const Text('Tentar novamente'),
+                ),
+              ]),
+            ),
+          );
+        }
+        if (snapshot.data != null) return const HomeTabsScreen();
+        return MeuFitOnboardingScreen(
+          onCompleted: (_) => setState(() => _completed = true),
         );
       },
     );
