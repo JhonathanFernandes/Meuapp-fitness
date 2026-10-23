@@ -16,7 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:convert';
+
 import 'package:material_ui/material_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wger/features/nutrition/models/nutritional_plan.dart';
 import 'package:wger/features/nutrition/models/nutritional_values.dart';
 import 'package:wger/features/nutrition/widgets/charts.dart';
@@ -29,42 +32,95 @@ class NutritionalDiaryDetailWidget extends StatelessWidget {
 
   const NutritionalDiaryDetailWidget(this._nutritionalPlan, this._date);
 
+  static const _tacoLogsKey = 'meu_fit_taco_food_logs_v1';
+
+  Future<List<Map<String, dynamic>>> _loadTacoEntriesForDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_tacoLogsKey);
+    if (raw == null) return [];
+    try {
+      final decoded = jsonDecode(raw) as List<dynamic>;
+      return decoded.whereType<Map<String, dynamic>>().where((entry) {
+        final date = DateTime.tryParse((entry['dateTime'] ?? '').toString());
+        return date != null && date.year == _date.year &&
+            date.month == _date.month && date.day == _date.day;
+      }).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final nutritionalGoals = _nutritionalPlan.nutritionalGoals;
-    final valuesLogged = _nutritionalPlan.getValuesForDate(_date);
+    final baseValues = _nutritionalPlan.getValuesForDate(_date);
     final logs = _nutritionalPlan.getLogsForDate(_date);
 
-    if (valuesLogged == null) {
-      return const Text('');
-    }
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _loadTacoEntriesForDate(),
+      builder: (context, snapshot) {
+        final tacoEntries = snapshot.data ?? const <Map<String, dynamic>>[];
+        if (baseValues == null && tacoEntries.isEmpty) return const Text('');
 
-    return Column(
-      children: [
-        Card(
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(15),
-                height: 220,
-                child: FlNutritionalPlanPieChartWidget(valuesLogged),
+        final valuesLogged = NutritionalValues()..add(baseValues ?? NutritionalValues());
+        double amount(Map<String, dynamic> entry, String key) {
+          final v = entry[key];
+          return v is num ? v.toDouble() : 0;
+        }
+        for (final entry in tacoEntries) {
+          valuesLogged.add(NutritionalValues.values(
+            amount(entry, 'energyKcal'), amount(entry, 'proteinG'),
+            amount(entry, 'carbohydrateG'), 0, amount(entry, 'lipidsG'),
+            0, amount(entry, 'fiberG'), 0,
+          ));
+        }
+
+        return Column(children: [
+          Card(child: Column(children: [
+            Container(
+              padding: const EdgeInsets.all(15),
+              height: 220,
+              child: FlNutritionalPlanPieChartWidget(valuesLogged),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: NutritionDiaryTable(
+                planned: nutritionalGoals.toValues(), logged: valuesLogged,
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: NutritionDiaryTable(
-                  planned: nutritionalGoals.toValues(),
-                  logged: valuesLogged,
+            ),
+          ])),
+          if (tacoEntries.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text('ALIMENTOS TACO REGISTRADOS',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 6),
+            ...tacoEntries.map((entry) {
+              final grams = entry['grams'], energy = entry['energyKcal'];
+              final protein = entry['proteinG'], carbs = entry['carbohydrateG'];
+              final fat = entry['lipidsG'];
+              return Card(child: ListTile(
+                leading: const Icon(Icons.restaurant),
+                title: Text((entry['name'] ?? 'Alimento').toString()),
+                subtitle: Text(
+                  '${grams is num ? grams.toStringAsFixed(0) : '?'} g · '
+                  '${energy is num ? energy.toStringAsFixed(0) : '—'} kcal\n'
+                  'P ${protein is num ? protein.toStringAsFixed(1) : '—'} g · '
+                  'C ${carbs is num ? carbs.toStringAsFixed(1) : '—'} g · '
+                  'G ${fat is num ? fat.toStringAsFixed(1) : '—'} g',
                 ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 15),
-        const DiaryheaderTile(),
-        ...logs.map(
-          (e) => DiaryEntryTile(diaryEntry: e, nutritionalPlan: _nutritionalPlan),
-        ),
-      ],
+                isThreeLine: true,
+              ));
+            }),
+          ],
+          const SizedBox(height: 15),
+          const DiaryheaderTile(),
+          ...logs.map((e) => DiaryEntryTile(
+            diaryEntry: e, nutritionalPlan: _nutritionalPlan)),
+        ]);
+      },
     );
   }
 }
