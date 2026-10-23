@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Pesquisa a TACO 4ª edição através da API estática pública.
 /// Valores retornados pela fonte são expressos por 100 g de parte comestível.
@@ -23,10 +24,13 @@ class _MeuFitTacoFoodSearchScreenState
   bool _loadingList = true;
   bool _loadingDetail = false;
   String? _error;
+  List<Map<String, dynamic>> _loggedFoods = [];
+  bool _saving = false;
 
   @override
   void initState() {
     super.initState();
+    _loadLoggedFoods();
     _loadFoods();
   }
 
@@ -35,6 +39,82 @@ class _MeuFitTacoFoodSearchScreenState
     _searchController.dispose();
     _gramsController.dispose();
     super.dispose();
+  }
+
+
+  static const _logsKey = 'meu_fit_taco_food_logs_v1';
+
+  Future<void> _loadLoggedFoods() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_logsKey);
+    if (raw == null || !mounted) return;
+    try {
+      final decoded = jsonDecode(raw) as List<dynamic>;
+      setState(() => _loggedFoods = decoded.whereType<Map<String, dynamic>>().toList());
+    } catch (_) {
+      // Registros inválidos não devem impedir a pesquisa de alimentos.
+    }
+  }
+
+  Future<void> _saveFoodToDiary() async {
+    final food = _selectedFood;
+    final grams = _grams;
+    if (food == null || grams <= 0 || !grams.isFinite) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informe uma porção válida, maior que zero.')),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      final now = DateTime.now();
+      final entry = <String, dynamic>{
+        'id': '${now.microsecondsSinceEpoch}',
+        'foodId': food['id'],
+        'name': (food['description'] ?? 'Alimento').toString(),
+        'category': (food['category'] ?? '').toString(),
+        'grams': grams,
+        'dateTime': now.toIso8601String(),
+        'energyKcal': _scaled(food['energy_kcal'], grams),
+        'proteinG': _scaled(food['protein_g'], grams),
+        'carbohydrateG': _scaled(food['carbohydrate_g'], grams),
+        'lipidsG': _scaled(food['lipids_g'], grams),
+        'fiberG': _scaled(food['dietary_fiber_g'], grams),
+        'source': 'TACO / NEPA-UNICAMP',
+      };
+      final prefs = await SharedPreferences.getInstance();
+      final updated = [entry, ..._loggedFoods];
+      await prefs.setString(_logsKey, jsonEncode(updated));
+      if (!mounted) return;
+      setState(() {
+        _loggedFoods = updated;
+        _saving = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Consumo registrado neste aparelho.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível registrar o consumo.')),
+      );
+    }
+  }
+
+  double? _scaled(dynamic value, double grams) =>
+      value is num ? value * grams / 100 : null;
+
+  Future<void> _deleteLoggedFood(Map<String, dynamic> entry) async {
+    final updated = _loggedFoods.where((item) => item['id'] != entry['id']).toList();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_logsKey, jsonEncode(updated));
+    if (mounted) setState(() => _loggedFoods = updated);
+  }
+
+  String _loggedNumber(dynamic value, String unit) {
+    if (value is! num) return '—';
+    return '${value.toStringAsFixed(1).replaceAll('.', ',')} $unit';
   }
 
   Future<void> _loadFoods() async {
@@ -202,6 +282,21 @@ class _MeuFitTacoFoodSearchScreenState
                           _nutrientRow('Sódio', _portion(_selectedFood!['sodium_mg']), 'mg'),
                           _nutrientRow('Cálcio', _portion(_selectedFood!['calcium_mg']), 'mg'),
                           _nutrientRow('Ferro', _portion(_selectedFood!['iron_mg']), 'mg'),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: _saving ? null : _saveFoodToDiary,
+                              icon: _saving
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.add_task),
+                              label: Text(_saving ? 'Registrando...' : 'Registrar consumo'),
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           const Text(
                             'Fonte: Tabela Brasileira de Composição de Alimentos (TACO), '
@@ -227,6 +322,43 @@ class _MeuFitTacoFoodSearchScreenState
                     padding: EdgeInsets.all(20),
                     child: Center(child: CircularProgressIndicator()),
                   ),
+                if (_loggedFoods.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  const Text(
+                    'CONSUMOS REGISTRADOS NESTE APARELHO',
+                    style: TextStyle(color: lime, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  ..._loggedFoods.map((entry) {
+                    final date = DateTime.tryParse((entry['dateTime'] ?? '').toString());
+                    final dateLabel = date == null
+                        ? ''
+                        : '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} '
+                          '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                    return Card(
+                      child: ListTile(
+                        title: Text((entry['name'] ?? 'Alimento').toString()),
+                        subtitle: Text(
+                          '${_loggedNumber(entry['grams'], 'g')} · $dateLabel\\n'
+                          '${_loggedNumber(entry['energyKcal'], 'kcal')} · '
+                          'P ${_loggedNumber(entry['proteinG'], 'g')} · '
+                          'C ${_loggedNumber(entry['carbohydrateG'], 'g')} · '
+                          'G ${_loggedNumber(entry['lipidsG'], 'g')}',
+                        ),
+                        isThreeLine: true,
+                        trailing: IconButton(
+                          tooltip: 'Excluir registro',
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () => _deleteLoggedFood(entry),
+                        ),
+                      ),
+                    );
+                  }),
+                  const Text(
+                    'Esses registros ficam salvos localmente neste aparelho e ainda não são somados ao diário sincronizado do plano nutricional.',
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 Text('${results.length} resultados exibidos',
                     style: const TextStyle(color: Colors.white70)),
