@@ -117,7 +117,7 @@ class TrophyCard extends StatelessWidget {
                     height: 60,
                     cacheWidth: 180,
                     borderRadius: BorderRadius.circular(30),
-                    errorWidget: const CircleIconAvatar(
+                    errorWidget: CircleIconAvatar(
                       Icon(Icons.emoji_events, color: Theme.of(context).colorScheme.outline),
                       radius: 30,
                     ),
