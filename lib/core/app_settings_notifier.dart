@@ -134,7 +134,7 @@ class AppSettingsNotifier extends _$AppSettingsNotifier {
 
     return AppSettings(
       themeMode: _readThemeMode(stored),
-      userLocale: _matchSupportedLocale(stored[PREFS_USER_LOCALE] as String?),
+      userLocale: _matchSupportedLocale(stored[PREFS_USER_LOCALE] as String?) ?? const Locale('pt', 'BR'),
       dashboardItems: _readDashboardItems(stored),
       keepDataOnLogout: stored[PREFS_KEEP_DATA_ON_LOGOUT] as bool? ?? KEEP_DATA_ON_LOGOUT_DEFAULT,
       allowSelfSignedCerts: _readAllowSelfSignedCerts(stored),
