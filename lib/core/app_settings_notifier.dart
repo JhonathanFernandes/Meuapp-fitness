@@ -276,30 +276,53 @@ class AppSettingsNotifier extends _$AppSettingsNotifier {
     }
 
     try {
-      final List<dynamic> decoded = jsonDecode(jsonString);
-      final List<DashboardItem> loaded = [];
-
-      for (final item in decoded) {
-        final widget = DashboardWidget.fromString(item['widget']);
-        if (widget != null) {
-          loaded.add(DashboardItem(widget, isVisible: item['visible'] as bool));
-        }
+      final decoded = jsonDecode(jsonString);
+      if (decoded is! List<dynamic>) {
+        return defaultDashboardItems;
       }
 
-      // Add any missing widgets (e.g. newly added features)
+      final List<DashboardItem> loaded = [];
+      final seen = <DashboardWidget>{};
+
+      for (final item in decoded) {
+        if (item is! Map<String, dynamic>) {
+          continue;
+        }
+
+        final rawWidget = item['widget'];
+        if (rawWidget is! String) {
+          continue;
+        }
+
+        final widget = DashboardWidget.fromString(rawWidget);
+        // Ignore duplicate or unknown entries so a damaged/older preference
+        // cannot render the same dashboard card more than once.
+        if (widget == null || !seen.add(widget)) {
+          continue;
+        }
+
+        final rawVisible = item['visible'];
+        loaded.add(
+          DashboardItem(widget, isVisible: rawVisible is bool ? rawVisible : true),
+        );
+      }
+
+      // Add any missing widgets (e.g. newly added features) without changing
+      // the order or visibility of entries that were already stored.
       for (final widget in DashboardWidget.values) {
-        if (!loaded.any((item) => item.widget == widget)) {
+        if (!seen.contains(widget)) {
           var index = DashboardWidget.values.indexOf(widget);
           if (index > loaded.length) {
             index = loaded.length;
           }
           loaded.insert(index, DashboardItem(widget));
+          seen.add(widget);
         }
       }
 
       return loaded;
     } catch (_) {
-      return DashboardWidget.values.map((w) => DashboardItem(w)).toList();
+      return defaultDashboardItems;
     }
   }
 
