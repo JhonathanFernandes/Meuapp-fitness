@@ -141,7 +141,7 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
       );
     }
 
-    final currentLanguage = ref.watch(appSettingsNotifierProvider).valueOrNull?.userLocale?.languageCode ?? 'pt';
+    final currentLanguage = ref.watch(appSettingsNotifierProvider).asData?.value.userLocale?.languageCode ?? 'pt';
 
     return Scaffold(
       floatingActionButton: _selectedIndex == 0
