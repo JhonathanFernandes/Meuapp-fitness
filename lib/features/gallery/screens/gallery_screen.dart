@@ -56,7 +56,7 @@ class GalleryScreen extends ConsumerWidget {
                       );
                     }
                   : null,
-              child: const Icon(Icons.add, color: Colors.white),
+              child: Icon(Icons.add, color: Theme.of(context).colorScheme.onSecondary),
             ),
       body: const WidescreenWrapper(child: Gallery()),
     );
