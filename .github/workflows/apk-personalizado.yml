@@ -1,0 +1,48 @@
+name: Compilar APK Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - personalizacao-pt-br
+    paths:
+      - '.github/workflows/apk-personalizado.yml'
+      - 'lib/**'
+      - 'android/**'
+      - 'pubspec.*'
+      - 'l10n.yaml'
+
+permissions:
+  contents: read
+
+jobs:
+  android-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+      - name: Instalar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Instalar dependências
+        run: flutter pub get
+      - name: Gerar arquivos de localização
+        run: flutter gen-l10n
+      - name: Gerar código necessário
+        run: dart run build_runner build --delete-conflicting-outputs
+      - name: Compilar APK
+        run: flutter build apk --debug
+      - name: Disponibilizar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: meu-app-fitness-android-debug
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
