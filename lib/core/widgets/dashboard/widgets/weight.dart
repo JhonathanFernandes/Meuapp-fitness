@@ -41,6 +41,8 @@ class DashboardWeightWidget extends ConsumerWidget {
 
   Widget _shell(BuildContext context, Widget body) {
     return Card(
+      color: const Color(0xFF242424),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFF383838))),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -51,7 +53,7 @@ class DashboardWeightWidget extends ConsumerWidget {
             ),
             leading: FaIcon(
               FontAwesomeIcons.weightScale,
-              color: Theme.of(context).textTheme.headlineSmall!.color,
+              color: const Color(0xFFC9F31D),
             ),
           ),
           body,
