@@ -27,7 +27,7 @@ class MeuFitOnboardingProfile {
   final bool hasPhysicalLimitations;
   final String limitationsDescription;
 
-  static const goals = ['emagrecer', 'ganhar_massa', 'manter_forma'];
+  static const goals = ['emagrecer', 'ganhar_massa', 'manter_forma', 'flexibilidade'];
   static const experiences = ['iniciante', 'intermediario', 'avancado'];
   static const locations = ['academia', 'casa'];
 
