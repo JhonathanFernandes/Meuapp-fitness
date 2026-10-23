@@ -44,7 +44,7 @@ class StarterWorkoutPlanner {
   const StarterWorkoutPlanner();
 
   List<PlannedWorkout> generate(TrainingProfile profile) {
-    if (profile.age < 13 || profile.age > 100 ||
+    if (profile.age < 18 || profile.age > 64 || profile.avoidKneeImpact ||
         !profile.weightKg.isFinite || profile.weightKg <= 0 ||
         !profile.heightCm.isFinite || profile.heightCm <= 0 ||
         profile.daysPerWeek < 1 || profile.daysPerWeek > 7) {
