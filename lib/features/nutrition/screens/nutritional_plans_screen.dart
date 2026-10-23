@@ -82,8 +82,8 @@ class NutritionalPlansScreen extends ConsumerWidget {
             color: const Color(0xFF242424),
             child: ListTile(
               leading: const Icon(Icons.menu_book, color: Color(0xFFC9F31D)),
-              title: const Text('Alimentação brasileira'),
-              subtitle: const Text('Consulte TBCA, TACO e Guia Alimentar; veja a origem dos dados.'),
+              title: const Text('Alimentação'),
+              subtitle: const Text('Consulte as fontes nutricionais e os critérios dos planos.'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.push(context, MaterialPageRoute<void>(
                 builder: (_) => const MeuFitNutritionSourcesScreen())),
