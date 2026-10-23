@@ -77,4 +77,5 @@ class MeuFitSavedPlan {
       await prefs.remove(_key);
       return null;
     }
-  }\n}\n
+  }
+}
