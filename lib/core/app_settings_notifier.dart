@@ -138,7 +138,7 @@ class AppSettingsNotifier extends _$AppSettingsNotifier {
       dashboardItems: _readDashboardItems(stored),
       keepDataOnLogout: stored[PREFS_KEEP_DATA_ON_LOGOUT] as bool? ?? KEEP_DATA_ON_LOGOUT_DEFAULT,
       allowSelfSignedCerts: _readAllowSelfSignedCerts(stored),
-      useDynamicColor: stored[PREFS_USE_DYNAMIC_COLOR] as bool? ?? USE_DYNAMIC_COLOR_DEFAULT,
+      useDynamicColor: stored[PREFS_USE_DYNAMIC_COLOR] as bool? ?? false,
       verboseLogging: _readVerboseLogging(stored),
     );
   }
@@ -150,7 +150,7 @@ class AppSettingsNotifier extends _$AppSettingsNotifier {
   static ThemeMode _readThemeMode(Map<String, Object?> stored) {
     final dark = stored[PREFS_USER_DARK_THEME] as bool?;
     if (dark == null) {
-      return ThemeMode.system;
+      return ThemeMode.dark;
     }
     return dark ? ThemeMode.dark : ThemeMode.light;
   }
