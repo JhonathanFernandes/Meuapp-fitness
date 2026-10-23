@@ -63,6 +63,8 @@ import 'package:wger/features/measurements/screens/measurement_entries_screen.da
 import 'package:wger/features/measurements/screens/weight_screen.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_screen.dart';
 import 'package:wger/features/smart_training/meu_fit_plan_screen.dart';
+import 'package:wger/features/smart_training/meu_fit_sources_screen.dart';
+import 'package:wger/features/smart_training/meu_fit_loading_screen.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 import 'package:wger/features/nutrition/screens/ingredient_detail_screen.dart';
 import 'package:wger/features/nutrition/screens/ingredients_screen.dart';
@@ -333,6 +335,18 @@ class _MeuFitFirstAccessGateState extends State<MeuFitFirstAccessGate> {
   late Future<MeuFitOnboardingProfile?> _profile;
   bool _completed = false;
   MeuFitOnboardingProfile? _newProfile;
+  bool _showSources = false;
+  bool _preparingPlan = false;
+
+  Future<void> _preparePlan() async {
+    setState(() {
+      _showSources = false;
+      _preparingPlan = true;
+    });
+    // Breve transição visual; o plano continua sendo gerado localmente.
+    await Future<void>.delayed(const Duration(seconds: 2));
+    if (mounted) setState(() => _preparingPlan = false);
+  }
 
   @override
   void initState() {
@@ -343,6 +357,8 @@ class _MeuFitFirstAccessGateState extends State<MeuFitFirstAccessGate> {
   @override
   Widget build(BuildContext context) {
     if (_completed) return const HomeTabsScreen();
+    if (_showSources) return MeuFitSourcesScreen(onContinue: _preparePlan);
+    if (_preparingPlan) return const MeuFitLoadingScreen();
     if (_newProfile != null) {
       return MeuFitPlanScreen(
         profile: _newProfile!,
@@ -372,7 +388,10 @@ class _MeuFitFirstAccessGateState extends State<MeuFitFirstAccessGate> {
         }
         if (snapshot.data != null) return const HomeTabsScreen();
         return MeuFitOnboardingScreen(
-          onCompleted: (profile) => setState(() => _newProfile = profile),
+          onCompleted: (profile) => setState(() {
+            _newProfile = profile;
+            _showSources = true;
+          }),
         );
       },
     );
