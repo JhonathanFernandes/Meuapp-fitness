@@ -149,7 +149,7 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
               tooltip: 'Idioma / Language',
               icon: const Icon(Icons.language),
               initialValue: currentLanguage,
-              onSelected: (language) => _changeLanguage(Locale(language, language == 'pt' ? 'BR' : 'US')),
+              onSelected: (language) => _changeLanguage(language == 'pt' ? const Locale('pt', 'BR') : const Locale('en')),
               itemBuilder: (context) => const [
                 PopupMenuItem(value: 'pt', child: Text('Português (Brasil)')),
                 PopupMenuItem(value: 'en', child: Text('English')),
