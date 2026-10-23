@@ -210,7 +210,7 @@ class Exercise extends Equatable {
   };
 
   Translation _localizeFallback(Translation original, String languageCode) {
-    if (languageCode != 'pt' || original.language.shortName == 'pt') {
+    if (languageCode != 'pt' || original.language.shortName.toLowerCase().startsWith('pt')) {
       return original;
     }
     final localizedName = _brazilianExerciseNames[original.name.trim().toLowerCase()];
@@ -231,7 +231,7 @@ class Exercise extends Equatable {
 
   Translation getTranslation(String language) {
     // If the language is in the form en-US, take the language code only
-    final languageCode = language.split('-')[0];
+    final languageCode = language.replaceAll('_', '-').split('-')[0].toLowerCase();
 
     if (translations.isEmpty) {
       _logger.info('Exercise-ID $id has no translations, returning an empty placeholder.');
@@ -243,7 +243,7 @@ class Exercise extends Equatable {
     }
 
     final selected = translations.firstWhere(
-      (e) => e.language.shortName == languageCode,
+      (e) => e.language.shortName.replaceAll('_', '-').split('-')[0].toLowerCase() == languageCode,
       orElse: () => translations.firstWhere(
         (e) => e.language.shortName == LANGUAGE_SHORT_ENGLISH,
         orElse: () {
