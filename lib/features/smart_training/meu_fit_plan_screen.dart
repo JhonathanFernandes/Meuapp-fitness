@@ -176,7 +176,11 @@ class MeuFitPlanScreen extends ConsumerWidget {
                                     fontWeight: FontWeight.bold)),
                             const SizedBox(height: 12),
                             if (matches == null)
-                              const Text('Carregando biblioteca de exercícios...'),
+                              Text(catalog.hasError
+                                  ? 'Não foi possível consultar a biblioteca agora. As sugestões continuam disponíveis para leitura.'
+                                  : catalog.isLoading
+                                      ? 'Carregando biblioteca de exercícios...'
+                                      : 'Biblioteca de exercícios indisponível no momento.'),
                             if (matches != null)
                               for (final match in matches)
                               Padding(
