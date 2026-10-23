@@ -30,10 +30,23 @@ import 'package:wger/core/widgets/dashboard/widgets/weight.dart';
 import 'package:wger/l10n/generated/app_localizations.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   static const routeName = '/dashboard';
+
+  @override
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  late final Future<MeuFitOnboardingProfile?> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileFuture = MeuFitOnboardingStorage().load();
+  }
 
   Widget _getDashboardWidget(DashboardWidget widget) {
     switch (widget) {
@@ -78,7 +91,7 @@ class DashboardScreen extends ConsumerWidget {
       body: Column(
         children: [
           FutureBuilder<MeuFitOnboardingProfile?>(
-            future: MeuFitOnboardingStorage().load(),
+            future: _profileFuture,
             builder: (context, snapshot) {
               final profile = snapshot.data;
               final String headline;
