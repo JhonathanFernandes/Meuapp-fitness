@@ -8,11 +8,11 @@ class MeuFitNutritionSourcesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     const lime = Color(0xFFC9F31D);
     return Scaffold(
-      appBar: AppBar(title: const Text('Fontes da alimentação')),
+      appBar: AppBar(title: const Text('Fontes nutricionais')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: const [
-          Text('ALIMENTAÇÃO BRASILEIRA',
+          Text('ALIMENTAÇÃO',
             style: TextStyle(color: lime, fontWeight: FontWeight.bold)),
           SizedBox(height: 12),
           Text('De onde vêm os dados?',
