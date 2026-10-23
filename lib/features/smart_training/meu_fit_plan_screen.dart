@@ -43,6 +43,30 @@ class MeuFitPlanScreen extends ConsumerWidget {
       ),
     );
 
+    final goalExplanation = switch (profile.goal) {
+      'emagrecer' => 'Objetivo: emagrecimento. A atividade física regular pode '
+          'ajudar no gasto energético e na saúde cardiometabólica. O treino '
+          'de força complementa o trabalho aeróbico; a perda de peso '
+          'não depende apenas dos exercícios.',
+      'ganhar_massa' => 'Objetivo: hipertrofia. O treinamento resistido '
+          'precisa de progressão, recuperação e volume adequados. '
+          'As séries apresentadas são apenas uma referência inicial.',
+      'flexibilidade' => 'Objetivo: flexibilidade. A sessão prioriza '
+          'mobilidade e alongamentos suaves, sem forçar amplitude '
+          'ou usar dor como sinal de progresso.',
+      _ => 'Objetivo: condicionamento e manutenção. A prática regular '
+          'pode combinar fortalecimento e atividade aeróbica, '
+          'com progressão gradual.',
+    };
+    final evidenceSource = switch (profile.goal) {
+      'ganhar_massa' => 'Referência: ACSM, atualização sobre treinamento '
+          'resistido (2026).',
+      'flexibilidade' => 'Referência: ACSM, diretrizes gerais de '
+          'flexibilidade e aptidão física.',
+      _ => 'Referência: Ministério da Saúde, Guia de Atividade Física '
+          'para a População Brasileira (2021).',
+    };
+
     final catalog = ref.watch(exercisesProvider);
     final requiresIndividualReview = profile.age < 18 || profile.age > 64 ||
         profile.hasPhysicalLimitations;
@@ -77,6 +101,31 @@ class MeuFitPlanScreen extends ConsumerWidget {
                     Text('Sugestão automática baseada nas suas respostas. '
                         'Ainda não foi adicionada ao calendário.'),
                   ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF242424),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('POR QUE ESTE TIPO DE TREINO?',
+                          style: TextStyle(
+                              color: lime, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text(goalExplanation),
+                      const SizedBox(height: 8),
+                      Text(evidenceSource,
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.white70)),
+                    ],
+                  ),
                 ),
               ),
               if (requiresIndividualReview)
