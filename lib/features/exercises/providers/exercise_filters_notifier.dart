@@ -127,9 +127,12 @@ class ExerciseListFiltersNotifier extends _$ExerciseListFiltersNotifier {
     if (filters.searchTerm.length > 1) {
       final term = filters.searchTerm.toLowerCase();
       items = items.where((e) {
-        // TODO: FullTextSearch?
-        final title = e.getTranslation(languageCode).name.toLowerCase();
-        return title.contains(term);
+        // Busca pelo nome brasileiro exibido, por traduções e por apelidos.
+        final localizedName = e.getTranslation(languageCode).name.toLowerCase();
+        return localizedName.contains(term) ||
+            e.translations.any((translation) =>
+                translation.name.toLowerCase().contains(term) ||
+                translation.aliases.any((alias) => alias.alias.toLowerCase().contains(term)));
       }).toList();
     }
 
