@@ -93,6 +93,7 @@ class _MeuFitOnboardingScreenState extends State<MeuFitOnboardingScreen> {
       'emagrecer': 'Emagrecer',
       'ganhar_massa': 'Ganhar massa muscular',
       'manter_forma': 'Manter a forma',
+      'flexibilidade': 'Melhorar flexibilidade e mobilidade',
     }, (v) => _goal = v),
     2 => _choice('Qual é sua experiência?', _experience, {
       'iniciante': 'Iniciante',
