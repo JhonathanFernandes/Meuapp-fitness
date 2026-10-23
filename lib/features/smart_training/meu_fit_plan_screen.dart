@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wger/features/exercises/providers/exercises_notifier.dart';
+import 'package:wger/features/smart_training/meu_fit_exercise_matcher.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 import 'package:wger/features/smart_training/starter_workout_planner.dart';
 
 /// Prévia de treino sugerido com base nas respostas do cadastro.
 /// Nesta etapa, não cria nem altera rotinas existentes no servidor wger.
-class MeuFitPlanScreen extends StatelessWidget {
+class MeuFitPlanScreen extends ConsumerWidget {
   const MeuFitPlanScreen({
     super.key,
     required this.profile,
@@ -15,7 +18,7 @@ class MeuFitPlanScreen extends StatelessWidget {
   final VoidCallback onContinue;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final plan = const StarterWorkoutPlanner().generate(
       TrainingProfile(
         age: profile.age,
@@ -39,6 +42,7 @@ class MeuFitPlanScreen extends StatelessWidget {
       ),
     );
 
+    final catalog = ref.watch(exercisesProvider);
     const lime = Color(0xFFC9F31D);
     return Theme(
       data: ThemeData.dark(useMaterial3: true).copyWith(
@@ -79,6 +83,10 @@ class MeuFitPlanScreen extends StatelessWidget {
                   itemCount: plan.length,
                   itemBuilder: (context, index) {
                     final day = plan[index];
+                    final matches = catalog.value == null
+                        ? null
+                        : const MeuFitExerciseMatcher().match(
+                            day.exercises, catalog.value!.exercises);
                     return Card(
                       color: const Color(0xFF242424),
                       margin: const EdgeInsets.only(bottom: 12),
@@ -93,12 +101,16 @@ class MeuFitPlanScreen extends StatelessWidget {
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold)),
                             const SizedBox(height: 12),
-                            for (final exercise in day.exercises)
+                            if (matches == null)
+                              const Text('Carregando biblioteca de exercícios...'),
+                            if (matches != null)
+                              for (final match in matches)
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: Text(
-                                  '• ${exercise.name} · ${exercise.sets} séries '
-                                  '× ${exercise.reps}',
+                                  '• ${match.planned.name} · ${match.planned.sets} séries '
+                                  '× ${match.planned.reps}  '
+                                  '${match.found ? "✓ Encontrado" : "⚠ Não encontrado"}',
                                 ),
                               ),
                           ],
