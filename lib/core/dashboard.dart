@@ -81,6 +81,23 @@ class DashboardScreen extends ConsumerWidget {
             future: MeuFitOnboardingStorage().load(),
             builder: (context, snapshot) {
               final profile = snapshot.data;
+              final String headline;
+              if (snapshot.hasError) {
+                headline = 'Não foi possível carregar seu perfil';
+              } else if (snapshot.connectionState != ConnectionState.done) {
+                headline = 'Carregando seu perfil...';
+              } else if (profile == null) {
+                headline = 'Acompanhe sua evolução';
+              } else {
+                headline = 'Objetivo: ${switch (profile.goal) {
+                  'emagrecer' => 'Emagrecimento',
+                  'ganhar_massa' => 'Ganhar massa muscular',
+                  'manter_forma' => 'Manter a forma',
+                  'flexibilidade' => 'Flexibilidade e mobilidade',
+                  _ => 'Objetivo não identificado',
+                }}';
+              }
+
               return Container(
                 width: double.infinity,
                 margin: const EdgeInsets.fromLTRB(12, 12, 12, 4),
@@ -88,27 +105,56 @@ class DashboardScreen extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF242424),
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFFC9F31D).withValues(alpha: 0.24),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('MEU FIT · SEU PAINEL',
-                      style: TextStyle(color: Color(0xFFC9F31D),
-                        fontWeight: FontWeight.bold)),
+                    const Text(
+                      'MEU FIT · SEU PAINEL',
+                      style: TextStyle(
+                        color: Color(0xFFC9F31D),
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    Text(profile == null
-                      ? 'Acompanhe sua evolução'
-                      : 'Objetivo: ${switch (profile.goal) {
-                          'ganhar_massa' => 'Ganhar massa muscular',
-                          'manter_forma' => 'Manter a forma',
-                          'flexibilidade' => 'Flexibilidade e mobilidade',
-                          _ => 'Emagrecimento',
-                        }}',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    if (profile != null) ...[
+                    Text(
+                      headline,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (snapshot.hasError) ...[
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Tente abrir o painel novamente. Seus dados não foram alterados.',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ] else if (snapshot.connectionState != ConnectionState.done) ...[
+                      const SizedBox(height: 12),
+                      const LinearProgressIndicator(
+                        color: Color(0xFFC9F31D),
+                        minHeight: 3,
+                      ),
+                    ] else if (profile == null) ...[
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Complete seu perfil para personalizar seu acompanhamento.',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ] else ...[
                       const SizedBox(height: 8),
-                      Text('Meta: ${profile.daysPerWeek} dias de treino por semana'),
-                      Text('Peso inicial: ${profile.weightKg.toStringAsFixed(1)} kg'),
+                      Text(
+                        'Meta: ${profile.daysPerWeek} dias de treino por semana',
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Peso inicial: ${profile.weightKg.toStringAsFixed(1)} kg',
+                      ),
                     ],
                   ],
                 ),
