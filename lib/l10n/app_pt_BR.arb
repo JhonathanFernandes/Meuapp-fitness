@@ -224,7 +224,7 @@
   "@timeStart": {
     "description": "The starting time of a workout"
   },
-  "searchExercise": "Exercício de pesquisa para adicionar",
+  "searchExercise": "Pesquisar exercício para adicionar",
   "@searchExercise": {
     "description": "Label on set form. Selected exercises are added to the set"
   },
@@ -236,7 +236,7 @@
   "@loadingText": {
     "description": "Text to show when entries are being loaded in the background: Loading..."
   },
-  "selectExercises": "Se quiser fazer um superséries você pode procurar vários exercícios, eles estarão agrupados",
+  "selectExercises": "Para criar uma supersérie, selecione vários exercícios; eles serão agrupados.",
   "nutritionalDiary": "Diário nutricional",
   "protein": "Proteína",
   "proteinShort": "P",
@@ -299,7 +299,7 @@
   "@planned": {
     "description": "Header for the column of 'planned' nutritional values, i.e. what should be eaten"
   },
-  "logHelpEntries": "Se em um mesmo dia houver mais de uma inscrição com o mesmo número de repetições, mas pesos diferentes, apenas a inscrição com maior peso será mostrada no diagrama.",
+  "logHelpEntries": "Se houver registros no mesmo dia com o mesmo número de repetições e cargas diferentes, somente a maior carga aparecerá no gráfico.",
   "exerciseName": "Nome do exercício",
   "@exerciseName": {
     "description": "Label for the name of a workout exercise"
@@ -319,7 +319,7 @@
     "description": "Abbreviation for gram"
   },
   "addMeal": "Adicionar refeição",
-  "sameRepetitions": "Se você fizer as mesmas repetições e peso para todas as séries, poderá preencher apenas uma linha. Por exemplo, para 4 séries basta inserir 10 para as repetições, isso automaticamente se torna \"4 x 10\".",
+  "sameRepetitions": "Se todas as séries tiverem a mesma carga e o mesmo número de repetições, basta preencher uma linha. Por exemplo, 4 séries de 10 repetições aparecem como \"4 x 10\".",
   "measurementEntriesHelpText": "A unidade usada para medir a categoria, como 'cm' ou '%'",
   "sugars": "Açúcar",
   "carbohydratesShort": "C",
@@ -807,7 +807,7 @@
   },
   "routines": "Rotinas",
   "newRoutine": "Nova rotina",
-  "noRoutines": "Não tens rotinas",
+  "noRoutines": "Você ainda não tem fichas de treino",
   "restTime": "Tempo de descanso",
   "sets": "Séries",
   "@sets": {
@@ -835,7 +835,7 @@
   },
   "restDay": "Dia de descanso",
   "isRestDay": "É dia de descanso",
-  "isRestDayHelp": "Por favor, note que todos as séries e exercícios serão removidos quando marcar um dia como um dia de descanso.",
+  "isRestDayHelp": "Ao marcar este dia como descanso, todas as séries e exercícios serão removidos.",
   "needsLogsToAdvance": "Precisa de logs para avançar",
   "selectAvailablePlates": "Selecione os pesos disponíveis",
   "barWeight": "Peso da barra",
@@ -870,11 +870,11 @@
   "fitInWeek": "Cronograma semanal fixo",
   "fitInWeekHelp": "Se ligado, os dias vão se repetir semanalmente, caso contrário os dias seguirão sequencialmente se considerar o começo de uma nova semana.",
   "addSuperset": "Adicionar superséries",
-  "setHasProgression": "Treino tem prograssão",
-  "setHasProgressionWarning": "Observe que, no momento, não é possível editar todas as configurações de um séries no aplicativo móvel nem configurar a progressão automática. Por enquanto, use o aplicativo web.",
-  "setHasNoExercises": "Este séries ainda não tem exercícios!",
+  "setHasProgression": "A série tem progressão",
+  "setHasProgressionWarning": "No momento, nem todas as configurações das séries podem ser editadas no aplicativo. Para configurar a progressão automática, use a versão web.",
+  "setHasNoExercises": "Esta série ainda não tem exercícios!",
   "simpleMode": "Modo simples",
-  "simpleModeHelp": "Esconder informações avançadas enquanto estiver editando exercicio",
+  "simpleModeHelp": "Ocultar informações avançadas ao editar um exercício",
   "progressionRules": "Este exercício tem regras de progressão e não pode ser editado no aplicativo móvel. Use o aplicativo web para editá-lo.",
   "resistance_band": "Banda de resistência",
   "@resistance_band": {
