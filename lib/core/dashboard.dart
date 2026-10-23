@@ -174,27 +174,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               );
             },
           ),
-          Expanded(child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: MATERIAL_LG_BREAKPOINT),
-          child: isMobile
-              ? ListView.builder(
-                  padding: const EdgeInsets.all(10),
-                  itemBuilder: (context, index) => _getDashboardWidget(visibleWidgets[index]),
-                  itemCount: visibleWidgets.length,
-                )
-              : GridView.builder(
-                  padding: const EdgeInsets.all(10),
-                  itemBuilder: (context, index) => SingleChildScrollView(
-                    child: _getDashboardWidget(visibleWidgets[index]),
-                  ),
-                  itemCount: visibleWidgets.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    childAspectRatio: 0.7,
-                  ),
-                ),
-        ),
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: MATERIAL_LG_BREAKPOINT),
+                child: isMobile
+                    ? ListView.builder(
+                        padding: const EdgeInsets.all(10),
+                        itemBuilder: (context, index) =>
+                            _getDashboardWidget(visibleWidgets[index]),
+                        itemCount: visibleWidgets.length,
+                      )
+                    : GridView.builder(
+                        padding: const EdgeInsets.all(10),
+                        itemBuilder: (context, index) => SingleChildScrollView(
+                          child: _getDashboardWidget(visibleWidgets[index]),
+                        ),
+                        itemCount: visibleWidgets.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          childAspectRatio: 0.7,
+                        ),
+                      ),
+              ),
+            ),
           ),
         ],
       ),
