@@ -24,12 +24,12 @@ import 'package:table_calendar/table_calendar.dart';
 // * https://pub.dev/packages/flex_color_scheme
 // * https://rydmike.com/flexseedscheme/demo-v1/#/
 
-const Color wgerPrimaryColor = Color(0xff2a4c7d);
-const Color wgerPrimaryButtonColor = Color(0xff266dd3);
-const Color wgerPrimaryColorLight = Color(0xff94B2DB);
-const Color wgerSecondaryColor = Color(0xffe63946);
-const Color wgerSecondaryColorLight = Color(0xffF6B4BA);
-const Color wgerTertiaryColor = Color(0xFF6CA450);
+const Color wgerPrimaryColor = Color(0xff101010);
+const Color wgerPrimaryButtonColor = Color(0xffC9F31D);
+const Color wgerPrimaryColorLight = Color(0xffF7F7F5);
+const Color wgerSecondaryColor = Color(0xffC9F31D);
+const Color wgerSecondaryColorLight = Color(0xffE5F5A2);
+const Color wgerTertiaryColor = Color(0xFF0F9D55);
 
 const FlexSubThemesData wgerSubThemeData = FlexSubThemesData(
   fabSchemeColor: SchemeColor.secondary,
