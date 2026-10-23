@@ -28,6 +28,9 @@ import 'package:wger/features/measurements/screens/measurement_categories_screen
 import 'package:wger/features/nutrition/screens/nutritional_plans_screen.dart';
 import 'package:wger/features/routines/screens/routine_list_screen.dart';
 import 'package:wger/l10n/generated/app_localizations.dart';
+import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
+import 'package:wger/features/measurements/screens/weight_screen.dart';
+import 'package:wger/features/account/widgets/settings.dart';
 
 class HomeTabsScreen extends ConsumerStatefulWidget {
   const HomeTabsScreen({super.key});
@@ -86,6 +89,7 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
     const NutritionalPlansScreen(),
     const MeasurementCategoriesScreen(),
     const GalleryScreen(),
+    const _MeuFitProfileScreen(),
   ];
 
   @override
@@ -108,8 +112,8 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
         label: 'Evolução',
       ),
       NavigationDestination(
-        icon: const Icon(Icons.photo_library),
-        label: 'Galeria',
+        icon: const Icon(Icons.person_outline),
+        label: 'Perfil',
       ),
     ];
 
@@ -167,6 +171,86 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
         ],
       ),
       bottomNavigationBar: _isWideScreen ? null : getNavigationBar(),
+    );
+  }
+}
+
+class _MeuFitProfileScreen extends StatelessWidget {
+  const _MeuFitProfileScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    const lime = Color(0xFFC9F31D);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Meu perfil')),
+      body: FutureBuilder<MeuFitOnboardingProfile?>(
+        future: MeuFitOnboardingStorage().load(),
+        builder: (context, snapshot) {
+          final profile = snapshot.data;
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              const CircleAvatar(
+                radius: 42,
+                backgroundColor: Color(0xFF242424),
+                child: Icon(Icons.person, size: 48, color: lime),
+              ),
+              const SizedBox(height: 12),
+              const Center(child: Text('MEU FIT · MEU PERFIL',
+                style: TextStyle(color: lime, fontWeight: FontWeight.bold))),
+              const SizedBox(height: 20),
+              Card(
+                color: const Color(0xFF242424),
+                child: Column(children: [
+                  ListTile(title: const Text('Peso inicial'),
+                    subtitle: Text(profile == null ? 'Complete seu cadastro'
+                      : '${profile.weightKg.toStringAsFixed(1)} kg')),
+                  ListTile(title: const Text('Altura'),
+                    subtitle: Text(profile == null ? 'Não informada'
+                      : '${profile.heightCm.toStringAsFixed(0)} cm')),
+                  ListTile(title: const Text('Meta de treinos'),
+                    subtitle: Text(profile == null ? 'Não informada'
+                      : '${profile.daysPerWeek} dias por semana')),
+                ]),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.monitor_weight, color: lime),
+                title: const Text('Meu peso e histórico'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.pushNamed(context, WeightScreen.routeName),
+              ),
+              ListTile(
+                leading: const Icon(Icons.straighten, color: lime),
+                title: const Text('Medidas corporais'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(context, MaterialPageRoute<void>(
+                  builder: (_) => const MeasurementCategoriesScreen())),
+              ),
+              ListTile(
+                leading: const Icon(Icons.restaurant, color: lime),
+                title: const Text('Alimentação e planos'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(context, MaterialPageRoute<void>(
+                  builder: (_) => const NutritionalPlansScreen())),
+              ),
+              ListTile(
+                leading: const Icon(Icons.settings, color: lime),
+                title: const Text('Configurações'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(context, MaterialPageRoute<void>(
+                  builder: (_) => const SettingsPage())),
+              ),
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Text('Foto editável: recurso em desenvolvimento.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70)),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
