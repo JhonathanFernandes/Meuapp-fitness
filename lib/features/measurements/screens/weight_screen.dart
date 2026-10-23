@@ -57,7 +57,7 @@ class WeightScreen extends ConsumerWidget {
       floatingActionButton: category == null
           ? null
           : FloatingActionButton(
-              child: const Icon(Icons.add, color: Colors.white),
+              child: Icon(Icons.add, color: Theme.of(context).colorScheme.onSecondary),
               onPressed: () {
                 Navigator.pushNamed(
                   context,
