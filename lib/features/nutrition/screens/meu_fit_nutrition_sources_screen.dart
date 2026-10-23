@@ -1,8 +1,58 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-/// Referências para consulta; nenhuma tabela é copiada ou sincronizada aqui.
-class MeuFitNutritionSourcesScreen extends StatelessWidget {
+/// Consulta a base oficial da TBCA sem copiar nem redistribuir seus dados.
+class MeuFitNutritionSourcesScreen extends StatefulWidget {
   const MeuFitNutritionSourcesScreen({super.key});
+
+  @override
+  State<MeuFitNutritionSourcesScreen> createState() =>
+      _MeuFitNutritionSourcesScreenState();
+}
+
+class _MeuFitNutritionSourcesScreenState
+    extends State<MeuFitNutritionSourcesScreen> {
+  final _searchController = TextEditingController();
+  static const _tbcaSearchUrl =
+      'https://www.tbca.net.br/base-dados/composicao_alimentos_calculaveis.php';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _searchTbca() async {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Digite o nome de um alimento.')),
+      );
+      return;
+    }
+
+    final uri = Uri.parse(_tbcaSearchUrl).replace(
+      queryParameters: {'produto': query},
+    );
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível abrir a consulta da TBCA.')),
+      );
+    }
+  }
+
+  Future<void> _openUrl(String url) async {
+    final opened = await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível abrir o endereço.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,45 +61,83 @@ class MeuFitNutritionSourcesScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Fontes nutricionais')),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: const [
-          Text('ALIMENTAÇÃO',
-            style: TextStyle(color: lime, fontWeight: FontWeight.bold)),
-          SizedBox(height: 12),
-          Text('De onde vêm os dados?',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          SizedBox(height: 12),
-          Text('As referências abaixo orientam a futura integração de alimentos brasileiros. '
-            'Os ingredientes cadastrados atualmente no wger não foram automaticamente '
-            'validados contra essas tabelas.'),
-          SizedBox(height: 16),
+        children: [
+          const Text('ALIMENTAÇÃO',
+              style: TextStyle(color: lime, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          const Text('Consultar alimentos brasileiros',
+              style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text(
+            'Pesquise na base oficial da TBCA por nome ou tipo de preparo. '
+            'A consulta abre os resultados publicados pela Universidade de São Paulo.',
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _searchController,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (_) => _searchTbca(),
+            decoration: InputDecoration(
+              labelText: 'Nome do alimento',
+              hintText: 'Ex.: arroz, feijão, frango cozido',
+              prefixIcon: const Icon(Icons.search),
+              border: const OutlineInputBorder(),
+              suffixIcon: IconButton(
+                tooltip: 'Limpar',
+                icon: const Icon(Icons.close),
+                onPressed: _searchController.clear,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          FilledButton.icon(
+            onPressed: _searchTbca,
+            icon: const Icon(Icons.open_in_new),
+            label: const Text('Consultar na TBCA'),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'A consulta é feita no site oficial. Os valores exibidos dependem '
+            'do alimento e do preparo selecionados; confira a porção e a unidade.',
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+          const SizedBox(height: 20),
+          const Text('Outras referências',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
           _SourceCard(
             title: 'TBCA · Universidade de São Paulo',
-            url: 'https://www.tbca.net.br/',
-            description: 'Tabela Brasileira de Composição de Alimentos. '
-              'Referência para energia, macronutrientes e micronutrientes por alimento e preparo.'),
+            description: 'Tabela Brasileira de Composição de Alimentos, '
+                'com composição nutricional e opções de alimentos preparados.',
+            actionLabel: 'Abrir TBCA',
+            onTap: () => _openUrl('https://www.tbca.net.br/'),
+          ),
           _SourceCard(
             title: 'TACO · Unicamp',
-            url: 'https://www.nepa.unicamp.br/taco/',
-            description: 'Tabela Brasileira de Composição de Alimentos. '
-              'Fonte complementar, respeitando as condições de uso dos dados.'),
+            description: 'Tabela Brasileira de Composição de Alimentos, '
+                '4ª edição. Referência complementar.',
+            actionLabel: 'Abrir TACO',
+            onTap: () => _openUrl(
+              'https://nepa.unicamp.br/tabela-brasileira-de-composicao-de-alimentos-4a-edicao/',
+            ),
+          ),
           _SourceCard(
             title: 'Guia Alimentar · Ministério da Saúde',
-            url: 'https://www.gov.br/saude/pt-br/assuntos/saude-brasil/publicacoes-para-promocao-a-saude/guia_alimentar_populacao_brasileira_2ed.pdf',
-            description: 'Orientações sobre alimentação adequada, alimentos in natura, '
-              'minimamente processados e ultraprocessados. Não é uma tabela de nutrientes.'),
-          SizedBox(height: 16),
-          Text('Como serão montadas as sugestões?',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          Text('O plano deverá considerar objetivo, preferências, restrições, '
-            'rotina e porções em gramas e medidas caseiras brasileiras. '
-            'Cada alimento deverá indicar sua fonte, versão e porção utilizada. '
-            'Cálculos energéticos e metas individuais só serão exibidos quando '
-            'os dados necessários estiverem disponíveis e validados.'),
-          SizedBox(height: 12),
-          Text('Importante: este painel documenta as fontes. '
-            'Ele ainda não importa a base TBCA/TACO nem gera uma dieta individual.',
-            style: TextStyle(color: Colors.white70)),
+            description: 'Orientações sobre alimentação adequada e o consumo '
+                'de alimentos in natura e minimamente processados.',
+            actionLabel: 'Abrir guia',
+            onTap: () => _openUrl(
+              'https://www.gov.br/saude/pt-br/assuntos/saude-brasil/publicacoes-para-promocao-a-saude/guia_alimentar_populacao_brasileira_2ed.pdf',
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Importante: esta etapa conecta o app à consulta oficial da TBCA, '
+            'mas ainda não sincroniza os nutrientes para dentro do diário do Meu Fit. '
+            'Os alimentos do wger não são automaticamente equivalentes aos registros '
+            'da TBCA ou TACO.',
+            style: TextStyle(color: Colors.white70),
+          ),
         ],
       ),
     );
@@ -57,10 +145,17 @@ class MeuFitNutritionSourcesScreen extends StatelessWidget {
 }
 
 class _SourceCard extends StatelessWidget {
-  const _SourceCard({required this.title, required this.url, required this.description});
+  const _SourceCard({
+    required this.title,
+    required this.description,
+    required this.actionLabel,
+    required this.onTap,
+  });
+
   final String title;
-  final String url;
   final String description;
+  final String actionLabel;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +170,14 @@ class _SourceCard extends StatelessWidget {
               color: Color(0xFFC9F31D), fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             Text(description),
-            const SizedBox(height: 8),
-            SelectableText(url, style: const TextStyle(color: Colors.white70)),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: onTap,
+                icon: const Icon(Icons.open_in_new),
+                label: Text(actionLabel),
+              ),
+            ),
           ],
         ),
       ),
