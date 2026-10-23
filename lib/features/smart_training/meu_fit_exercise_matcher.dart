@@ -33,7 +33,7 @@ class MeuFitExerciseMatcher {
   String _normalize(String text) => text
       .toLowerCase()
       .trim()
-      .replaceAll(RegExp(r'\\s+'), ' ');
+      .replaceAll(RegExp(r'\s+'), ' ');
 
   List<MeuFitExerciseMatch> match(
     List<PlannedExercise> planned,
