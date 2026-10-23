@@ -105,7 +105,10 @@ class Exercises extends _$Exercises {
         final ids = await ref
             .read(exerciseRepositoryProvider)
             .searchExerciseServer(term, languageCode: languageCode, searchEnglish: searchEnglish);
-        return _exercises.where((e) => ids.contains(e.id)).toList();
+        // Inclui nomes brasileiros locais que o índice remoto não conhece.
+        final local = await _searchExerciseLocal(term, languageCode: languageCode, searchEnglish: searchEnglish);
+        final matchedIds = {...ids, ...local.map((exercise) => exercise.id)};
+        return _exercises.where((e) => matchedIds.contains(e.id)).toList();
       },
       local: () =>
           _searchExerciseLocal(term, languageCode: languageCode, searchEnglish: searchEnglish),
