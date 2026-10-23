@@ -62,6 +62,7 @@ import 'package:wger/features/measurements/screens/measurement_category_sort_scr
 import 'package:wger/features/measurements/screens/measurement_entries_screen.dart';
 import 'package:wger/features/measurements/screens/weight_screen.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_screen.dart';
+import 'package:wger/features/smart_training/meu_fit_plan_screen.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 import 'package:wger/features/nutrition/screens/ingredient_detail_screen.dart';
 import 'package:wger/features/nutrition/screens/ingredients_screen.dart';
@@ -331,6 +332,7 @@ class MeuFitFirstAccessGate extends StatefulWidget {
 class _MeuFitFirstAccessGateState extends State<MeuFitFirstAccessGate> {
   late Future<MeuFitOnboardingProfile?> _profile;
   bool _completed = false;
+  MeuFitOnboardingProfile? _newProfile;
 
   @override
   void initState() {
@@ -341,6 +343,12 @@ class _MeuFitFirstAccessGateState extends State<MeuFitFirstAccessGate> {
   @override
   Widget build(BuildContext context) {
     if (_completed) return const HomeTabsScreen();
+    if (_newProfile != null) {
+      return MeuFitPlanScreen(
+        profile: _newProfile!,
+        onContinue: () => setState(() => _completed = true),
+      );
+    }
     return FutureBuilder<MeuFitOnboardingProfile?>(
       future: _profile,
       builder: (context, snapshot) {
@@ -364,7 +372,7 @@ class _MeuFitFirstAccessGateState extends State<MeuFitFirstAccessGate> {
         }
         if (snapshot.data != null) return const HomeTabsScreen();
         return MeuFitOnboardingScreen(
-          onCompleted: (_) => setState(() => _completed = true),
+          onCompleted: (profile) => setState(() => _newProfile = profile),
         );
       },
     );
