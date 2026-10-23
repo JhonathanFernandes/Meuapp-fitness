@@ -25,6 +25,7 @@ import 'package:wger/features/routines/models/routine.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 import 'package:wger/features/smart_training/meu_fit_plan_screen.dart';
 import 'package:wger/features/smart_training/meu_fit_saved_plan.dart';
+import 'package:wger/features/routines/providers/routines_notifier.dart';
 import 'package:wger/features/routines/widgets/app_bar.dart';
 import 'package:wger/features/routines/widgets/forms/routine.dart';
 import 'package:wger/features/routines/widgets/routines_list.dart';
@@ -132,6 +133,46 @@ class RoutineListScreen extends riverpod.ConsumerWidget {
                                 padding: EdgeInsets.all(16),
                                 child: Text('Meu plano salvo',
                                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: FilledButton.icon(
+                                  icon: const Icon(Icons.playlist_add),
+                                  label: const Text('Criar rotina a partir do plano'),
+                                  onPressed: isOnline ? () async {
+                                    try {
+                                      final description = saved.map((day) =>
+                                        '${day.title}\n' +
+                                        (day.exercises.isEmpty
+                                          ? 'Recuperação'
+                                          : day.exercises.map((e) =>
+                                              '${e.name}: ${e.sets} séries × ${e.reps}; descanso ${e.restSeconds}s'
+                                            ).join('\n'))
+                                      ).join('\n\n');
+                                      final routine = Routine(
+                                        name: 'Meu Fit · Plano inicial',
+                                        description: description.length > Routine.MAX_LENGTH_DESCRIPTION
+                                          ? description.substring(0, Routine.MAX_LENGTH_DESCRIPTION)
+                                          : description,
+                                        fitInWeek: true,
+                                      );
+                                      final created = await ref.read(routinesRiverpodProvider.notifier)
+                                          .addRoutine(routine);
+                                      if (!sheetContext.mounted) return;
+                                      Navigator.of(sheetContext).pop();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text(
+                                          'Rotina ${created.name} criada. Adicione os exercícios pelo editor.',
+                                        )),
+                                      );
+                                    } catch (_) {
+                                      if (!sheetContext.mounted) return;
+                                      ScaffoldMessenger.of(sheetContext).showSnackBar(
+                                        const SnackBar(content: Text('Não foi possível criar a rotina.')),
+                                      );
+                                    }
+                                  } : null,
+                                ),
                               ),
                               Expanded(
                                 child: ListView(
