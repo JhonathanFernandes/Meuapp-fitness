@@ -26,13 +26,25 @@ import 'package:wger/features/nutrition/widgets/charts.dart';
 import 'package:wger/features/nutrition/widgets/nutrition_tiles.dart';
 import 'package:wger/l10n/generated/app_localizations.dart';
 
-class NutritionalDiaryDetailWidget extends StatelessWidget {
+class NutritionalDiaryDetailWidget extends StatefulWidget {
   final NutritionalPlan _nutritionalPlan;
   final DateTime _date;
 
   const NutritionalDiaryDetailWidget(this._nutritionalPlan, this._date);
 
+  @override
+  State<NutritionalDiaryDetailWidget> createState() => _NutritionalDiaryDetailWidgetState();
+}
+
+class _NutritionalDiaryDetailWidgetState extends State<NutritionalDiaryDetailWidget> {
   static const _tacoLogsKey = 'meu_fit_taco_food_logs_v1';
+  late Future<List<Map<String, dynamic>>> _tacoEntriesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _tacoEntriesFuture = _loadTacoEntriesForDate();
+  }
 
   Future<List<Map<String, dynamic>>> _loadTacoEntriesForDate() async {
     final prefs = await SharedPreferences.getInstance();
@@ -42,22 +54,53 @@ class NutritionalDiaryDetailWidget extends StatelessWidget {
       final decoded = jsonDecode(raw) as List<dynamic>;
       return decoded.whereType<Map<String, dynamic>>().where((entry) {
         final date = DateTime.tryParse((entry['dateTime'] ?? '').toString());
-        return date != null && date.year == _date.year &&
-            date.month == _date.month && date.day == _date.day;
+        return date != null && date.year == widget._date.year &&
+            date.month == widget._date.month && date.day == widget._date.day;
       }).toList();
     } catch (_) {
       return [];
     }
   }
 
+  Future<void> _deleteTacoEntry(Map<String, dynamic> entry) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir alimento?'),
+        content: Text('Deseja remover ${(entry['name'] ?? 'este alimento').toString()} do diário?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Excluir')),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_tacoLogsKey);
+    if (raw != null) {
+      try {
+        final decoded = jsonDecode(raw) as List<dynamic>;
+        final updated = decoded.whereType<Map<String, dynamic>>()
+            .where((item) => item['id'] != entry['id']).toList();
+        await prefs.setString(_tacoLogsKey, jsonEncode(updated));
+      } catch (_) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não foi possível excluir o alimento.')),
+        );
+        return;
+      }
+    }
+    if (mounted) setState(() => _tacoEntriesFuture = _loadTacoEntriesForDate());
+  }
+
   @override
   Widget build(BuildContext context) {
-    final nutritionalGoals = _nutritionalPlan.nutritionalGoals;
-    final baseValues = _nutritionalPlan.getValuesForDate(_date);
-    final logs = _nutritionalPlan.getLogsForDate(_date);
+    final nutritionalGoals = widget._nutritionalPlan.nutritionalGoals;
+    final baseValues = widget._nutritionalPlan.getValuesForDate(widget._date);
+    final logs = widget._nutritionalPlan.getLogsForDate(widget._date);
 
     return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _loadTacoEntriesForDate(),
+      future: _tacoEntriesFuture,
       builder: (context, snapshot) {
         final tacoEntries = snapshot.data ?? const <Map<String, dynamic>>[];
         if (baseValues == null && tacoEntries.isEmpty) return const Text('');
@@ -112,13 +155,18 @@ class NutritionalDiaryDetailWidget extends StatelessWidget {
                   'G ${fat is num ? fat.toStringAsFixed(1) : '—'} g',
                 ),
                 isThreeLine: true,
+                trailing: IconButton(
+                  tooltip: 'Excluir do diário',
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () => _deleteTacoEntry(entry),
+                ),
               ));
             }),
           ],
           const SizedBox(height: 15),
           const DiaryheaderTile(),
           ...logs.map((e) => DiaryEntryTile(
-            diaryEntry: e, nutritionalPlan: _nutritionalPlan)),
+            diaryEntry: e, nutritionalPlan: widget._nutritionalPlan)),
         ]);
       },
     );
