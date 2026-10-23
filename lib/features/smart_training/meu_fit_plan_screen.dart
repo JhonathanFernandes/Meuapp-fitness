@@ -183,8 +183,8 @@ class MeuFitPlanScreen extends ConsumerWidget {
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: Text(
                                   '• ${match.planned.name} · ${match.planned.sets} séries '
-                                  '× ${match.planned.reps}  '
-                                  '${match.found ? "✓ Encontrado" : "⚠ Não encontrado"}',
+                                  '× ${match.planned.reps} · descanso ${match.planned.restSeconds}s · '
+                                  '${match.found ? "✓ Encontrado no catálogo" : "⚠ Não encontrado no catálogo"}',
                                 ),
                               ),
                           ],
