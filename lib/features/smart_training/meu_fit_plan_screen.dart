@@ -4,6 +4,7 @@ import 'package:wger/features/exercises/providers/exercises_notifier.dart';
 import 'package:wger/features/smart_training/meu_fit_exercise_matcher.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 import 'package:wger/features/smart_training/starter_workout_planner.dart';
+import 'package:wger/features/smart_training/meu_fit_saved_plan.dart';
 
 /// Prévia de treino sugerido com base nas respostas do cadastro.
 /// Nesta etapa, não cria nem altera rotinas existentes no servidor wger.
@@ -193,6 +194,35 @@ class MeuFitPlanScreen extends ConsumerWidget {
                   },
                 ),
               ),
+              if (!requiresIndividualReview)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        try {
+                          await MeuFitSavedPlan().save(plan);
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text(
+                              'Plano salvo neste celular. Ainda não foi adicionado às rotinas.',
+                            )),
+                          );
+                        } catch (_) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text(
+                              'Não foi possível salvar o plano.',
+                            )),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.save_outlined),
+                      label: const Text('Salvar plano neste celular'),
+                    ),
+                  ),
+                ),
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: SizedBox(
