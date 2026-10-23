@@ -93,23 +93,23 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
     final destinations = [
       NavigationDestination(
         icon: const Icon(Icons.home),
-        label: AppLocalizations.of(context).labelDashboard,
+        label: 'Início',
       ),
       NavigationDestination(
         icon: const Icon(Icons.fitness_center),
-        label: AppLocalizations.of(context).labelBottomNavWorkout,
+        label: 'Treinos',
       ),
       NavigationDestination(
         icon: const Icon(Icons.restaurant),
-        label: AppLocalizations.of(context).labelBottomNavNutrition,
+        label: 'Nutrição',
       ),
       NavigationDestination(
         icon: const Icon(Icons.area_chart),
-        label: AppLocalizations.of(context).labelBottomNavBody,
+        label: 'Evolução',
       ),
       NavigationDestination(
         icon: const Icon(Icons.photo_library),
-        label: AppLocalizations.of(context).gallery,
+        label: 'Galeria',
       ),
     ];
 
@@ -119,13 +119,17 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
         destinations: destinations,
         onDestinationSelected: _onItemTapped,
         selectedIndex: _selectedIndex,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        backgroundColor: const Color(0xFF181818),
+        indicatorColor: const Color(0xFFC9F31D),
       );
     }
 
     /// Navigation rail for wide screens
     Widget getNavigationRail() {
       return NavigationRail(
+        backgroundColor: const Color(0xFF181818),
+        indicatorColor: const Color(0xFFC9F31D),
         selectedIndex: _selectedIndex,
         onDestinationSelected: _onItemTapped,
         labelType: NavigationRailLabelType.all,
