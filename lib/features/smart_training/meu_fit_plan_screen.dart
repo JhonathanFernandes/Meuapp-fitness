@@ -28,6 +28,7 @@ class MeuFitPlanScreen extends ConsumerWidget {
         goal: switch (profile.goal) {
           'ganhar_massa' => FitnessGoal.buildMuscle,
           'manter_forma' => FitnessGoal.stayFit,
+          'flexibilidade' => FitnessGoal.flexibility,
           _ => FitnessGoal.loseWeight,
         },
         experience: switch (profile.experience) {
