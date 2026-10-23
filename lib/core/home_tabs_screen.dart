@@ -77,7 +77,7 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
   }
 
   Future<void> _changeLanguage(Locale locale) async {
-    await ref.read(appSettingsNotifierProvider.notifier).setUserLocale(locale);
+    await ref.read(appSettingsProvider.notifier).setUserLocale(locale);
   }
 
   final _screenList = [
@@ -141,7 +141,7 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
       );
     }
 
-    final currentLanguage = ref.watch(appSettingsNotifierProvider).asData?.value.userLocale?.languageCode ?? 'pt';
+    final currentLanguage = ref.watch(appSettingsProvider).asData?.value.userLocale?.languageCode ?? 'pt';
 
     return Scaffold(
       floatingActionButton: _selectedIndex == 0
