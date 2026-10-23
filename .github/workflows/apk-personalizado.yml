@@ -46,3 +46,5 @@ jobs:
           name: meu-app-fitness-android-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
+
+# Recompilacao manual do APK com as ultimas alteracoes do aplicativo.
