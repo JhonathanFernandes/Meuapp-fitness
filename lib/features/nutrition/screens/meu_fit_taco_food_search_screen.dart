@@ -154,10 +154,7 @@ class _MeuFitTacoFoodSearchScreenState
                   const SizedBox(height: 12),
                   Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                   TextButton.icon(
-                    onPressed: _selectedFood == null ? _loadFoods : () {
-                      final food = _foods.where((f) => f['id'] == _selectedFood?['id']).firstOrNull;
-                      if (food != null) _selectFood(food);
-                    },
+                    onPressed: _loadFoods,
                     icon: const Icon(Icons.refresh),
                     label: const Text('Tentar novamente'),
                   ),
