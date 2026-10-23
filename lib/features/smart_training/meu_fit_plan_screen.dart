@@ -19,7 +19,10 @@ class MeuFitPlanScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final plan = const StarterWorkoutPlanner().generate(
+    final requiresIndividualReview = profile.age < 18 || profile.age > 64 ||
+        profile.hasPhysicalLimitations;
+    final plan = requiresIndividualReview ? const <PlannedWorkout>[] :
+        const StarterWorkoutPlanner().generate(
       TrainingProfile(
         age: profile.age,
         weightKg: profile.weightKg,
@@ -68,8 +71,6 @@ class MeuFitPlanScreen extends ConsumerWidget {
     };
 
     final catalog = ref.watch(exercisesProvider);
-    final requiresIndividualReview = profile.age < 18 || profile.age > 64 ||
-        profile.hasPhysicalLimitations;
     const lime = Color(0xFFC9F31D);
     return Theme(
       data: ThemeData.dark(useMaterial3: true).copyWith(
