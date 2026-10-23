@@ -108,7 +108,7 @@ class _DashboardRoutineWidgetState extends ConsumerState<DashboardRoutineWidget>
         context,
         title: i18n.labelWorkoutPlan,
         subtitle: i18n.anErrorOccurred,
-        trailing: const Icon(Icons.error_outline, color: Colors.red),
+        trailing: Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
         child: StreamErrorIndicator(e, stacktrace: st),
       ),
       data: (state) {
