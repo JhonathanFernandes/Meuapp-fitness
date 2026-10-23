@@ -43,6 +43,8 @@ class MeuFitPlanScreen extends ConsumerWidget {
     );
 
     final catalog = ref.watch(exercisesProvider);
+    final requiresIndividualReview = profile.age < 18 || profile.age > 64 ||
+        profile.hasPhysicalLimitations;
     const lime = Color(0xFFC9F31D);
     return Theme(
       data: ThemeData.dark(useMaterial3: true).copyWith(
@@ -76,8 +78,28 @@ class MeuFitPlanScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              if (requiresIndividualReview)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: Text(
+                    'Seu perfil indica que é necessária uma avaliação individual '
+                    'com profissional de Educação Física antes de seguir um treino '
+                    'personalizado. Nenhuma rotina será criada automaticamente.',
+                    style: TextStyle(color: Colors.orangeAccent),
+                  ),
+                ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Text(
+                  'Sugestão educativa baseada em diretrizes de atividade física. '
+                  'Não é prescrição profissional nem garante resultados.',
+                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                ),
+              ),
               Expanded(
-                child: ListView.builder(
+                child: requiresIndividualReview
+                    ? const Center(child: Text('Treino automático indisponível para este perfil.'))
+                    : ListView.builder(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 20, vertical: 8),
                   itemCount: plan.length,
