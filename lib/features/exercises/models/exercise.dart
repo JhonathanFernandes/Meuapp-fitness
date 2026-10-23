@@ -110,6 +110,59 @@ class Exercise extends Equatable {
   /// is returned so callers never have to handle a missing translation. This
   /// happens transiently while translations are still syncing, or for exercises
   /// that genuinely ship without any translation.
+  // Nomes usuais nas academias brasileiras para exercícios sem tradução pt.
+  // A correspondência é exata para evitar trocar nomes de variações diferentes.
+  static const Map<String, String> _brazilianExerciseNames = {
+    'bench press': 'Supino reto',
+    'barbell bench press': 'Supino reto com barra',
+    'dumbbell bench press': 'Supino reto com halteres',
+    'incline bench press': 'Supino inclinado',
+    'decline bench press': 'Supino declinado',
+    'push up': 'Flexão de braços',
+    'push-up': 'Flexão de braços',
+    'squat': 'Agachamento',
+    'barbell squat': 'Agachamento com barra',
+    'bodyweight squat': 'Agachamento livre',
+    'leg press': 'Leg press',
+    'leg extension': 'Cadeira extensora',
+    'leg curl': 'Mesa flexora',
+    'deadlift': 'Levantamento terra',
+    'romanian deadlift': 'Levantamento terra romeno',
+    'lat pulldown': 'Puxada alta',
+    'pull up': 'Barra fixa',
+    'pull-up': 'Barra fixa',
+    'seated cable row': 'Remada baixa na polia',
+    'bicep curl': 'Rosca bíceps',
+    'barbell curl': 'Rosca direta com barra',
+    'hammer curl': 'Rosca martelo',
+    'triceps pushdown': 'Tríceps na polia',
+    'shoulder press': 'Desenvolvimento de ombros',
+    'lateral raise': 'Elevação lateral',
+    'calf raise': 'Elevação de panturrilhas',
+    'plank': 'Prancha abdominal',
+    'crunch': 'Abdominal curto',
+  };
+
+  Translation _localizeFallback(Translation original, String languageCode) {
+    if (languageCode != 'pt' || original.language.shortName == 'pt') {
+      return original;
+    }
+    final localizedName = _brazilianExerciseNames[original.name.trim().toLowerCase()];
+    if (localizedName == null) return original;
+    return Translation(
+      id: original.id,
+      uuid: original.uuid,
+      created: original.created,
+      exerciseId: original.exerciseId,
+      name: localizedName,
+      description: original.description,
+      descriptionSource: original.descriptionSource,
+      language: original.language,
+      notes: original.notes,
+      aliases: original.aliases,
+    );
+  }
+
   Translation getTranslation(String language) {
     // If the language is in the form en-US, take the language code only
     final languageCode = language.split('-')[0];
@@ -123,7 +176,7 @@ class Exercise extends Equatable {
       );
     }
 
-    return translations.firstWhere(
+    final selected = translations.firstWhere(
       (e) => e.language.shortName == languageCode,
       orElse: () => translations.firstWhere(
         (e) => e.language.shortName == LANGUAGE_SHORT_ENGLISH,
@@ -136,6 +189,7 @@ class Exercise extends Equatable {
         },
       ),
     );
+    return _localizeFallback(selected, languageCode);
   }
 
   ExerciseImage? get getMainImage {
