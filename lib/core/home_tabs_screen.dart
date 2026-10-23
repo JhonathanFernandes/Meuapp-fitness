@@ -17,6 +17,7 @@
  */
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wger/core/app_settings_notifier.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:wger/core/dashboard.dart';
 import 'package:wger/core/material.dart';
@@ -73,6 +74,10 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Future<void> _changeLanguage(Locale locale) async {
+    await ref.read(appSettingsNotifierProvider.notifier).setUserLocale(locale);
   }
 
   final _screenList = [
@@ -136,7 +141,21 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
       );
     }
 
+    final currentLanguage = ref.watch(appSettingsNotifierProvider).valueOrNull?.userLocale?.languageCode ?? 'pt';
+
     return Scaffold(
+      floatingActionButton: _selectedIndex == 0
+          ? PopupMenuButton<String>(
+              tooltip: 'Idioma / Language',
+              icon: const Icon(Icons.language),
+              initialValue: currentLanguage,
+              onSelected: (language) => _changeLanguage(Locale(language, language == 'pt' ? 'BR' : 'US')),
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 'pt', child: Text('Português (Brasil)')),
+                PopupMenuItem(value: 'en', child: Text('English')),
+              ],
+            )
+          : null,
       body: Row(
         children: [
           if (_isWideScreen) getNavigationRail(),
