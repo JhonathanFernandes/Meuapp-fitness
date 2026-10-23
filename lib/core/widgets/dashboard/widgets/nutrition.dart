@@ -45,6 +45,11 @@ class DashboardNutritionWidget extends ConsumerWidget {
     Widget? child,
   }) {
     return Card(
+      color: const Color(0xFF242424),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFF383838)),
+      ),
       child: Column(
         children: [
           ListTile(
@@ -102,6 +107,11 @@ class DashboardNutritionWidget extends ConsumerWidget {
         }
 
         return Card(
+          color: const Color(0xFF242424),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Color(0xFF383838)),
+          ),
           child: Column(
             children: [
               ListTile(
