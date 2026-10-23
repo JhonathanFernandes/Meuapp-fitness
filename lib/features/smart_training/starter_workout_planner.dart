@@ -99,7 +99,14 @@ class StarterWorkoutPlanner {
             PlannedWorkout('Parte inferior', [...lower, ...core]),
           ];
 
+    // A quantidade informada representa disponibilidade, não obrigação de
+    // repetir musculação diariamente. Reservar dias adicionais para descanso
+    // ou atividade leve até que a programação semanal seja validada.
+    final resistanceDays = profile.daysPerWeek > 4 ? 4 : profile.daysPerWeek;
     return List.generate(profile.daysPerWeek, (day) {
+      if (day >= resistanceDays) {
+        return PlannedWorkout('Dia ${day + 1} · Recuperação', const []);
+      }
       final template = split[day % split.length];
       return PlannedWorkout('Dia ${day + 1} · ${template.title}', template.exercises);
     });
