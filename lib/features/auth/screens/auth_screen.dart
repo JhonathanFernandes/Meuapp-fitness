@@ -29,7 +29,7 @@ class AuthScreen extends StatelessWidget {
     final deviceSize = MediaQuery.sizeOf(context);
     const background = Color(0xFF101010);
     const bannerColor = background;
-    const onBannerColor = Colors.white;
+    const onBannerColor = Color(0xFFC9F31D);
 
     return Scaffold(
       backgroundColor: background,
