@@ -271,52 +271,173 @@ class _MeuFitTacoFoodSearchScreenState
   }
 
   Widget _buildMealFoodRow(String itemText, BuildContext dialogContext) {
-    final query = _foodSearchKey(itemText.replaceAll(RegExp(r'\d+(?:[.,]\d+)?\s*(?:g|ml|unidade|unidades|ovo|ovos)?', caseSensitive: false), ' '));
-    Map<String, dynamic>? match;
-    int bestScore = 0;
-    for (final food in _foods) {
-      final name = _foodSearchKey((food['description'] ?? '').toString());
-      if (name.isEmpty || query.isEmpty) continue;
-      final tokens = query.split(' ').where((token) => token.length > 2).toSet();
-      final score = tokens.where((token) => name.contains(token)).length;
-      if (score > bestScore) {
-        bestScore = score;
-        match = food;
-      }
-    }
-    final food = match;
-    final matched = food != null && bestScore > 0;
     final portion = RegExp(r'(\d+(?:[.,]\d+)?)\s*g\b', caseSensitive: false).firstMatch(itemText);
-    final portionGramsKnown = portion != null;
-    final grams = portion == null ? 100.0 : (double.tryParse(portion.group(1)!.replaceAll(',', '.')) ?? 100);
-    final kcal = food?['energy_kcal'];
-    final protein = food?['protein_g'];
-    final carbs = food?['carbohydrate_g'];
-    final fat = food?['lipids_g'];
-    final fiber = food?['dietary_fiber_g'];
-    final sodium = food?['sodium_mg'];
-    String scaled(dynamic value) => value is num
-        ? (value * grams / 100).toStringAsFixed(1).replaceAll('.', ',')
-        : '—';
+    final grams = portion == null
+        ? null
+        : double.tryParse(portion.group(1)!.replaceAll(',', '.'));
     return Card(
       color: const Color(0xFF292929),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         title: Text(itemText, style: const TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: Text(matched
-            ? 'Correspondência provável: ${food!['description']}\n${portionGramsKnown ? 'Porção calculada: ${grams.toStringAsFixed(0)} g' : 'Valores de referência por 100 g; peso da unidade não identificado'} · ${scaled(kcal)} kcal · P ${scaled(protein)} g · C ${scaled(carbs)} g · G ${scaled(fat)} g · fibras ${scaled(fiber)} g · sódio ${scaled(sodium)} mg'
-            : 'Não foi possível associar automaticamente a um alimento da TACO. Pesquise pelo nome no catálogo para consultar a tabela nutricional.',
-          style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.45)),
-        isThreeLine: true,
-        trailing: IconButton(
-          tooltip: 'Consultar alimento',
-          icon: const Icon(Icons.search, color: Color(0xFFC9F31D)),
-          onPressed: () {
-            Navigator.of(dialogContext).pop();
-            _searchController.text = itemText;
-            setState(() {});
-          },
+        subtitle: Text(
+          grams == null
+              ? 'Alimento ainda não confirmado na TACO. Selecione a correspondência correta para ver os nutrientes; o peso da unidade não será presumido.'
+              : 'Porção indicada: ${grams.toStringAsFixed(grams == grams.roundToDouble() ? 0 : 1).replaceAll('.', ',')} g. Confirme o alimento/preparo na TACO para calcular calorias, proteínas, carboidratos, gorduras, fibras e sódio.',
+          style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.45),
         ),
+        trailing: IconButton(
+          tooltip: 'Selecionar alimento exato na TACO',
+          icon: const Icon(Icons.search, color: Color(0xFFC9F31D)),
+          onPressed: () => _chooseTacoFoodForMeal(itemText, dialogContext),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _chooseTacoFoodForMeal(String itemText, BuildContext parentDialogContext) async {
+    final searchController = TextEditingController(
+      text: itemText.replaceAll(RegExp(r'\d+(?:[.,]\d+)?\s*(?:g|ml|unidade|unidades|ovo|ovos)?', caseSensitive: false), ' ').trim(),
+    );
+    final gramsController = TextEditingController(
+      text: RegExp(r'(\d+(?:[.,]\d+)?)\s*g\b', caseSensitive: false)
+              .firstMatch(itemText)?.group(1) ?? '100',
+    );
+    Map<String, dynamic>? selected;
+    await showDialog<void>(
+      context: parentDialogContext,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final query = _foodSearchKey(searchController.text);
+          final results = _foods.where((food) {
+            final name = _foodSearchKey((food['description'] ?? '').toString());
+            final category = _foodSearchKey((food['category'] ?? '').toString());
+            return query.isEmpty || name.contains(query) || category.contains(query);
+          }).take(30).toList();
+          final grams = double.tryParse(gramsController.text.trim().replaceAll(',', '.'));
+          String n(dynamic value) => value is num && grams != null && grams > 0
+              ? (value * grams / 100).toStringAsFixed(1).replaceAll('.', ',')
+              : '—';
+          return AlertDialog(
+            backgroundColor: const Color(0xFF202020),
+            title: const Text('Confirmar alimento e porção'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                TextField(
+                  controller: searchController,
+                  onChanged: (_) => setDialogState(() => selected = null),
+                  decoration: const InputDecoration(labelText: 'Pesquisar na base TACO', prefixIcon: Icon(Icons.search)),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: gramsController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (_) => setDialogState(() {}),
+                  decoration: const InputDecoration(labelText: 'Quantidade em gramas', suffixText: 'g'),
+                ),
+                const SizedBox(height: 8),
+                if (selected == null)
+                  SizedBox(
+                    height: 220,
+                    child: results.isEmpty
+                        ? const Center(child: Text('Nenhum resultado. Tente outro nome.'))
+                        : ListView.builder(
+                            itemCount: results.length,
+                            itemBuilder: (_, index) {
+                              final food = results[index];
+                              return ListTile(
+                                dense: true,
+                                title: Text((food['description'] ?? 'Alimento').toString()),
+                                subtitle: Text((food['category'] ?? '').toString()),
+                                onTap: () => setDialogState(() => selected = food),
+                              );
+                            },
+                          ),
+                  )
+                else ...[
+                  Text((selected!['description'] ?? 'Alimento').toString(),
+                    style: const TextStyle(color: Color(0xFFC9F31D), fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 8),
+                  Text('${n(selected!['energy_kcal'])} kcal  ·  Proteína ${n(selected!['protein_g'])} g\nCarboidratos ${n(selected!['carbohydrate_g'])} g  ·  Gorduras ${n(selected!['lipids_g'])} g\nFibras ${n(selected!['dietary_fiber_g'])} g  ·  Sódio ${n(selected!['sodium_mg'])} mg',
+                    style: const TextStyle(height: 1.5)),
+                  const SizedBox(height: 8),
+                  TextButton(onPressed: () => setDialogState(() => selected = null), child: const Text('Escolher outro alimento')),
+                ],
+              ]),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+              FilledButton(
+                onPressed: selected == null || grams == null || grams <= 0
+                    ? null
+                    : () {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          SnackBar(content: Text('Tabela calculada para ${grams.toStringAsFixed(1).replaceAll('.', ',')} g de ${selected!['description']}. Para incluir no diário, use a pesquisa principal e registre a porção.')),
+                        );
+                      },
+                child: const Text('Confirmar valores'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    searchController.dispose();
+    gramsController.dispose();
+  }
+
+  Widget _profileNutritionGuidance() {
+    final profile = _profile;
+    if (profile == null) {
+      return const Card(
+        color: Color(0xFF202020),
+        child: ListTile(
+          leading: Icon(Icons.person_outline, color: Color(0xFFC9F31D)),
+          title: Text('Personalize o cardápio pelo seu perfil'),
+          subtitle: Text('Preencha idade, peso, altura e objetivo no perfil para adaptar as opções alimentares.'),
+        ),
+      );
+    }
+    final bmi = profile.weightKg / ((profile.heightCm / 100) * (profile.heightCm / 100));
+    final goal = switch (profile.goal) {
+      'emagrecer' => 'Redução de peso',
+      'ganhar_massa' => 'Hipertrofia / ganho de massa',
+      'manter_forma' => 'Manutenção',
+      'flexibilidade' => 'Condicionamento e mobilidade',
+      _ => 'Objetivo não definido',
+    };
+    final strategy = switch (profile.goal) {
+      'emagrecer' => 'Priorize refeições com vegetais, frutas, leguminosas e proteínas menos gordurosas; ajuste porções e energia total com acompanhamento profissional.',
+      'ganhar_massa' => 'Distribua fontes de proteína ao longo do dia e combine-as com carboidratos para sustentar o treino e a recuperação. A quantidade depende do perfil completo e do treino.',
+      'manter_forma' => 'Mantenha variedade entre alimentos in natura, leguminosas, cereais, frutas e fontes de proteína, com porções coerentes com sua rotina.',
+      'flexibilidade' => 'Use uma alimentação variada e suficiente para sustentar atividade e recuperação; a meta não é automaticamente emagrecer nem ganhar massa.',
+      _ => 'Use variedade alimentar e ajuste as porções às necessidades individuais.',
+    };
+    final bmiText = profile.age < 20
+        ? 'IMC calculado: ${bmi.toStringAsFixed(1).replaceAll('.', ',')} (para menores de 20 anos, a interpretação exige curva por idade e sexo).'
+        : 'IMC calculado: ${bmi.toStringAsFixed(1).replaceAll('.', ',')} (indicador de triagem; não define sozinho a dieta nem a composição corporal).';
+    return Card(
+      color: const Color(0xFF202020),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('ESTRATÉGIA ALIMENTAR DO SEU PERFIL',
+            style: TextStyle(color: Color(0xFFC9F31D), fontSize: 11, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 7),
+          Text(goal, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 4),
+          Text('${profile.age} anos · ${profile.weightKg.toStringAsFixed(1).replaceAll('.', ',')} kg · ${profile.heightCm.toStringAsFixed(0)} cm',
+            style: const TextStyle(color: Colors.white70, fontSize: 12)),
+          const SizedBox(height: 4),
+          Text(bmiText, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+          const SizedBox(height: 8),
+          Text(strategy, style: const TextStyle(color: Colors.white70, height: 1.4, fontSize: 12)),
+          const SizedBox(height: 8),
+          const Text('A estratégia muda conforme objetivo e dados do perfil; o IMC sozinho não define calorias, macros nem uma dieta clínica.',
+            style: TextStyle(color: Colors.white54, fontSize: 11, height: 1.35)),
+        ]),
       ),
     );
   }
@@ -601,6 +722,8 @@ class _MeuFitTacoFoodSearchScreenState
                   ),
                 ),
                 const SizedBox(height: 22),
+                _profileNutritionGuidance(),
+                const SizedBox(height: 10),
                 _weeklyMenuSection(),
                 const Text('ENCONTRE SEU ALIMENTO',
                   style: TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
