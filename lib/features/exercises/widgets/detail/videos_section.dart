@@ -73,14 +73,12 @@ class _ExerciseDemoPlayerState extends State<_ExerciseDemoPlayer> {
 
   static const _base = 'https://pub-585d42eb1aa64a67aedf483ec328d3fe.r2.dev/exercise-videos/male/';
   static const _videos = <String, String>{
-    'flexão inclinada': 'push-ups.mp4',
-    'incline push up': 'push-ups.mp4',
-    'incline push-up': 'push-ups.mp4',
-    'supino na máquina': 'barbell-bench-press.mp4',
-    'chest press': 'barbell-bench-press.mp4',
     'bench press': 'barbell-bench-press.mp4',
-    'desenvolvimento na máquina': 'dumbbell-lateral-raise.mp4',
-    'shoulder press': 'dumbbell-lateral-raise.mp4',
+    'shoulder press': 'shoulder-press.mp4',
+    'desenvolvimento de ombros': 'shoulder-press.mp4',
+    'elevação lateral': 'dumbbell-lateral-raise.mp4',
+    'lateral raise': 'dumbbell-lateral-raise.mp4',
+    'dumbbell lateral raise': 'dumbbell-lateral-raise.mp4',
     'ponte de glúteos': 'glute-bridge.mp4',
     'glute bridge': 'glute-bridge.mp4',
     'elevação pélvica': 'hip-thrust.mp4',
@@ -93,8 +91,6 @@ class _ExerciseDemoPlayerState extends State<_ExerciseDemoPlayer> {
     'bird dog': 'bird-dog.mp4',
     'remada sentada': 'seated-cable-row.mp4',
     'seated cable row': 'seated-cable-row.mp4',
-    'remada com elástico': 'seated-cable-row.mp4',
-    'desenvolvimento com elástico': 'shoulder-press.mp4',
     'levantamento terra com mochila': 'deadlift.mp4',
     'deadlift': 'deadlift.mp4',
     'agachamento até uma cadeira': 'bodyweight-squat.mp4',
