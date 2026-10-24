@@ -366,7 +366,7 @@ class _MeuFitTacoFoodSearchScreenState
             final name = _foodSearchKey((food['description'] ?? '').toString());
             final category = _foodSearchKey((food['category'] ?? '').toString());
             return query.isEmpty || name.contains(query) || category.contains(query);
-          }).take(30).toList();
+          }).toList();
           final grams = double.tryParse(gramsController.text.trim().replaceAll(',', '.'));
           String n(dynamic value) => value is num && grams != null && grams > 0
               ? (value * grams / 100).toStringAsFixed(1).replaceAll('.', ',')
@@ -723,7 +723,7 @@ class _MeuFitTacoFoodSearchScreenState
       final description = (food['description'] ?? '').toString().toLowerCase();
       final category = (food['category'] ?? '').toString().toLowerCase();
       return query.isEmpty || description.contains(query) || category.contains(query);
-    }).take(20).toList();
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(
