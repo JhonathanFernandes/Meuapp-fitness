@@ -18,9 +18,7 @@
 
 import 'package:material_ui/material_ui.dart';
 import 'package:wger/core/wide_screen_wrapper.dart';
-import 'package:wger/features/measurements/screens/measurement_category_sort_screen.dart';
 import 'package:wger/features/measurements/widgets/categories.dart';
-import 'package:wger/l10n/generated/app_localizations.dart';
 
 class MeasurementCategoriesScreen extends StatelessWidget {
   const MeasurementCategoriesScreen();
@@ -29,18 +27,9 @@ class MeasurementCategoriesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final i18n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Evolução'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sort),
-            tooltip: i18n.reorderCategories,
-            onPressed: () =>
-                Navigator.of(context).pushNamed(MeasurementCategorySortScreen.routeName),
-          ),
-        ],
       ),
       body: const WidescreenWrapper(
         child: CategoriesList(),
