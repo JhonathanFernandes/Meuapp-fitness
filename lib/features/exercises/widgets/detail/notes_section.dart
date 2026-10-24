@@ -27,7 +27,7 @@ class NotesSection extends StatelessWidget {
 
   bool _looksLikeEnglish(String value) {
     return RegExp(
-      r'\\b(with|and|for|from|the|to|your|keep|hold|slowly|start|return|alternate|added|stability|muscles|rectus|obliques|plank|bird dog|leg curl|hip thrust|incline|decline|standing|seated|lying|dumbbell|barbell|cable|machine|push up|pull down|deadlift|squat|crunch|row|press|raise|curl|extension)\\b',
+      r'\\b(with|and|for|from|the|to|your|this|that|are|is|keep|maintain|hold|slow|slowly|start|return|alternate|added|top|stability|muscles|rectus|obliques|plank|bird dog|leg curl|hip thrust|incline|decline|standing|seated|lying|dumbbell|barbell|cable|machine|push up|pull down|deadlift|squat|crunch|row|press|raise|curl|extension|perform|exercise|movement|position|feet|hands|repeat|breathe|breath|weight|lower|lift|squeeze|engage|target|muscle|should|finish|spine|neutral|knees|elbows|shoulders|hips|straight|equipment|load|range|motion|throughout|avoid|without|until|between|each|side|arms|legs|chest|using|place)\\b',
       caseSensitive: false,
     ).hasMatch(value);
   }
