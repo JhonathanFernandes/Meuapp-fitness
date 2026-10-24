@@ -219,56 +219,136 @@ class _WorkoutWeekdayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const lime = Color(0xFFC9F31D);
+    const surface = Color(0xFF202020);
     final count = workout.exercises.length;
     final recovery = count == 0;
-    return Card(
-      color: const Color(0xFF202020),
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(17),
-        side: BorderSide(color: Colors.white.withValues(alpha: 0.07)),
+    final focus = recovery
+        ? 'Recuperação e descanso'
+        : workout.title.replaceFirst(RegExp(r'^Dia \\d+ · '), '');
+    final previews = workout.exercises.take(3).toList();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 13),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(21),
+        border: Border.all(color: recovery ? Colors.white12 : lime.withValues(alpha: 0.24)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.16), blurRadius: 14, offset: const Offset(0, 6)),
+        ],
       ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: recovery ? const Color(0xFF333333) : lime,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  recovery ? Icons.hotel_outlined : Icons.fitness_center,
-                  color: recovery ? Colors.white70 : Colors.black,
-                ),
-              ),
-              const SizedBox(width: 13),
-              Expanded(
-                child: Column(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(21),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(weekday, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 4),
-                    Text(
-                      recovery ? 'Recuperação / descanso' : workout.title.replaceFirst(RegExp(r'^Dia \d+ · '), ''),
-                      style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    Container(
+                      width: 54,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: recovery
+                            ? const LinearGradient(colors: [Color(0xFF383838), Color(0xFF292929)])
+                            : const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Color(0xFFD8FF45), lime, Color(0xFF9EBF0C)],
+                              ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        recovery ? Icons.self_improvement_rounded : Icons.fitness_center_rounded,
+                        color: recovery ? Colors.white70 : const Color(0xFF171900),
+                        size: 27,
+                      ),
                     ),
-                    const SizedBox(height: 5),
-                    Text(
-                      recovery ? 'Dia de descanso' : '$count exercícios',
-                      style: const TextStyle(color: lime, fontSize: 12, fontWeight: FontWeight.w700),
+                    const SizedBox(width: 13),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(weekday.toUpperCase(),
+                            style: const TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.3)),
+                          const SizedBox(height: 5),
+                          Text(focus,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, height: 1.15)),
+                          const SizedBox(height: 6),
+                          Text(
+                            recovery ? 'Seu corpo também evolui descansando' : '$count exercícios planejados',
+                            style: const TextStyle(color: Colors.white60, fontSize: 12),
+                          ),
+                        ],
+                      ),
                     ),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 15),
                   ],
                 ),
-              ),
-              const Icon(Icons.chevron_right, color: Colors.white60),
-            ],
+                if (previews.isNotEmpty) ...[
+                  const SizedBox(height: 15),
+                  const Divider(color: Color(0xFF373737), height: 1),
+                  const SizedBox(height: 12),
+                  for (var i = 0; i < previews.length; i++)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: i == previews.length - 1 ? 0 : 9),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 23,
+                            height: 23,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: lime.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(7),
+                            ),
+                            child: Text('${i + 1}',
+                              style: const TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w800)),
+                          ),
+                          const SizedBox(width: 9),
+                          Expanded(
+                            child: Text(previews[i].name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                          ),
+                          Text('${previews[i].sets} × ${previews[i].reps}',
+                            style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                  if (count > 3) ...[
+                    const SizedBox(height: 10),
+                    Text('+ ${count - 3} exercícios no treino completo',
+                      style: const TextStyle(color: lime, fontSize: 12, fontWeight: FontWeight.w800)),
+                  ],
+                ],
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 11),
+                  decoration: BoxDecoration(
+                    color: recovery ? const Color(0xFF2B2B2B) : lime,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(recovery ? Icons.hotel_rounded : Icons.play_arrow_rounded,
+                        color: recovery ? Colors.white70 : Colors.black, size: 18),
+                      const SizedBox(width: 6),
+                      Text(recovery ? 'VER DIA' : 'VER TREINO COMPLETO',
+                        style: TextStyle(color: recovery ? Colors.white : Colors.black, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.6)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
