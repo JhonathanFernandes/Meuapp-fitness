@@ -66,6 +66,7 @@ import 'package:wger/features/smart_training/meu_fit_plan_screen.dart';
 import 'package:wger/features/smart_training/meu_fit_sources_screen.dart';
 import 'package:wger/features/smart_training/meu_fit_loading_screen.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
+import 'package:wger/features/onboarding/meu_fit_bmi_screen.dart';
 import 'package:wger/features/nutrition/screens/ingredient_detail_screen.dart';
 import 'package:wger/features/nutrition/screens/ingredients_screen.dart';
 import 'package:wger/features/nutrition/screens/log_meal_screen.dart';
@@ -336,6 +337,7 @@ class _MeuFitFirstAccessGateState extends State<MeuFitFirstAccessGate> {
   MeuFitOnboardingProfile? _newProfile;
   bool _showSources = false;
   bool _preparingPlan = false;
+  bool _showBmi = false;
 
   Future<void> _preparePlan() async {
     setState(() {
@@ -344,7 +346,12 @@ class _MeuFitFirstAccessGateState extends State<MeuFitFirstAccessGate> {
     });
     // Breve transição visual; o plano continua sendo gerado localmente.
     await Future<void>.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _preparingPlan = false);
+    if (mounted) {
+      setState(() {
+        _preparingPlan = false;
+        _showBmi = true;
+      });
+    }
   }
 
   @override
@@ -358,6 +365,12 @@ class _MeuFitFirstAccessGateState extends State<MeuFitFirstAccessGate> {
     if (_completed) return const HomeTabsScreen();
     if (_showSources) return MeuFitSourcesScreen(onContinue: _preparePlan);
     if (_preparingPlan) return const MeuFitLoadingScreen();
+    if (_showBmi && _newProfile != null) {
+      return MeuFitBmiScreen(
+        profile: _newProfile!,
+        onContinue: () => setState(() => _showBmi = false),
+      );
+    }
     if (_newProfile != null) {
       return MeuFitPlanScreen(
         profile: _newProfile!,
