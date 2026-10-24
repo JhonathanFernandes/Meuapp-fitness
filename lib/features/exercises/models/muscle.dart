@@ -66,16 +66,56 @@ class Muscle extends Equatable {
 
   String nameTranslated(BuildContext context) {
     final language = Localizations.localeOf(context).languageCode;
-    if (language == 'pt') {
-      final english = nameEn.trim().toLowerCase();
-      final portuguese = _nomesPt[english];
-      if (portuguese != null) return portuguese;
-      if (name.trim().isNotEmpty && !name.trim().toLowerCase().contains(RegExp(r'^(external|internal|rectus|pectoralis|biceps|triceps|deltoid|quadriceps|gluteus|gastrocnemius|soleus|latissimus|trapezius|erector)'))) {
-        return name;
-      }
+    if (language != 'pt') return name;
+
+    final englishName = nameEn.trim().toLowerCase();
+    final currentName = name.trim().toLowerCase();
+    final translated = _nomesPt[englishName] ?? _nomesPt[currentName];
+    if (translated != null) return translated;
+
+    // Nomes anatômicos adicionais comuns no catálogo wger.
+    const additional = <String, String>{
+      'anterior deltoid': 'Deltoide anterior',
+      'posterior deltoid': 'Deltoide posterior',
+      'middle deltoid': 'Deltoide lateral',
+      'deltoids': 'Deltoides',
+      'pectorals': 'Peitorais',
+      'chest': 'Peitoral',
+      'abdominal obliques': 'Oblíquos abdominais',
+      'transverse abdominis': 'Transverso do abdômen',
+      'serratus anterior': 'Serrátil anterior',
+      'rhomboids': 'Romboides',
+      'infraspinatus': 'Infraespinal',
+      'supraspinatus': 'Supraespinal',
+      'teres major': 'Redondo maior',
+      'teres minor': 'Redondo menor',
+      'lower back': 'Lombar',
+      'upper back': 'Parte superior das costas',
+      'spine': 'Coluna vertebral',
+      'neck': 'Pescoço',
+      'adductors': 'Adutores',
+      'abductors': 'Abdutores',
+      'hip flexors': 'Flexores do quadril',
+      'iliopsoas': 'Iliopsoas',
+      'tibialis anterior': 'Tibial anterior',
+      'forearm extensors': 'Extensores do antebraço',
+      'forearm flexors': 'Flexores do antebraço',
+      'wrist flexors': 'Flexores do punho',
+      'wrist extensors': 'Extensores do punho',
+      'gluteus': 'Glúteos',
+      'quadratus lumborum': 'Quadrado lombar',
+    };
+    final additionalTranslation = additional[englishName] ?? additional[currentName];
+    if (additionalTranslation != null) return additionalTranslation;
+
+    if (name.isNotEmpty &&
+        !RegExp(r'\b(external|internal|rectus|pectoralis|biceps|triceps|deltoid|quadriceps|gluteus|gastrocnemius|soleus|latissimus|trapezius|erector|anterior|posterior|middle|serratus|rhomboids|infraspinatus|supraspinatus|teres|adductors|abductors|hamstrings|calves|forearms)\b', caseSensitive: false).hasMatch(name)) {
       return name;
     }
-    return name;
+
+    // Não exibe a denominação anatômica em inglês quando o catálogo não traz
+    // uma tradução reconhecida.
+    return 'Músculo não identificado em português';
   }
 
   @override
