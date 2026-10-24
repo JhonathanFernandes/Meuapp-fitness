@@ -22,7 +22,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:wger/core/dashboard.dart';
 import 'package:wger/core/material.dart';
 import 'package:wger/features/account/providers/timezone_sync.dart';
-import 'package:wger/features/gallery/screens/gallery_screen.dart';
 import 'package:wger/features/health/providers/health_sync.dart';
 import 'package:wger/features/measurements/screens/measurement_categories_screen.dart';
 import 'package:wger/features/nutrition/screens/nutritional_plans_screen.dart';
@@ -88,7 +87,6 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
     const RoutineListScreen(),
     const NutritionalPlansScreen(),
     const MeasurementCategoriesScreen(),
-    const GalleryScreen(),
     const _MeuFitProfileScreen(),
   ];
 
