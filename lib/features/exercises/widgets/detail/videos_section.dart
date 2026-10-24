@@ -17,6 +17,7 @@
  */
 
 import 'package:material_ui/material_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wger/core/platform.dart';
 import 'package:wger/features/exercises/models/exercise.dart';
 import 'package:wger/features/exercises/widgets/videos.dart';
@@ -28,8 +29,32 @@ class VideosSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (exercise.videos.isEmpty || isDesktop) {
+    if (isDesktop) {
       return const SizedBox.shrink();
+    }
+
+    if (exercise.videos.isEmpty) {
+      final name = exercise.getTranslation(Localizations.localeOf(context).languageCode).name;
+      final uri = Uri.https('www.youtube.com', '/results', {
+        'search_query': '$name execução correta exercício tutorial',
+      });
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Vídeo de execução', style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            const Text('Este exercício ainda não tem vídeo próprio no catálogo.'),
+            const SizedBox(height: 6),
+            OutlinedButton.icon(
+              onPressed: () => launchUrl(uri, mode: LaunchMode.externalApplication),
+              icon: const Icon(Icons.play_circle_outline),
+              label: const Text('Buscar vídeo de demonstração'),
+            ),
+          ],
+        ),
+      );
     }
 
     return Column(
