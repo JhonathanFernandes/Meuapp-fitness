@@ -51,3 +51,5 @@ O projeto original aceita contribuições de código, traduções e documentaç�
 ## Licença e créditos
 
 Este aplicativo deriva do **wger Workout Manager**, desenvolvido pela equipe wger e seus colaboradores. O código original é disponibilizado sob a **GNU Affero General Public License, versão 3 ou posterior (AGPL-3.0-or-later)**, com exceção específica para lojas de aplicativos. Os avisos de direitos autorais e a licença original devem ser preservados. Dados de exercícios e ingredientes podem estar sujeitos a licenças Creative Commons próprias. Consulte os arquivos de licença do repositório e as informações de cada conjunto de dados.
+
+Desenvolvido por JHOWDEV
