@@ -179,6 +179,9 @@ String getServerStringTranslation(String value, BuildContext context) {
 
     default:
       logger.warning('Could not translate the server string $value');
+      if (Localizations.localeOf(context).languageCode == 'pt') {
+        return 'Outro';
+      }
       return value;
   }
 }
