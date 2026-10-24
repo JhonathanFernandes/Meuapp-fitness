@@ -35,7 +35,10 @@ class DescriptionSection extends StatelessWidget {
           AppLocalizations.of(context).description,
           style: Theme.of(context).textTheme.headlineSmall,
         ),
-        Html(data: translation.description),
+        if (translation.description.trim().isEmpty)
+          const Text('As instruções em português ainda não estão cadastradas para este exercício.')
+        else
+          Html(data: translation.description),
       ],
     );
   }
