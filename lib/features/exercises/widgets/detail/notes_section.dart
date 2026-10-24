@@ -49,7 +49,7 @@ class NotesSection extends StatelessWidget {
         if (notes.isEmpty)
           const Text('Não há observações adicionais em português para este exercício.')
         else
-          ...notes.map(Text.new),
+          ...notes.map((note) => Text(note)),
         const SizedBox(height: 9),
       ],
     );
