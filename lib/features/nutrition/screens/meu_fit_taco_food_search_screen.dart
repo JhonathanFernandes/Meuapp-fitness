@@ -29,11 +29,14 @@ class _MeuFitTacoFoodSearchScreenState
   bool _saving = false;
   MeuFitOnboardingProfile? _profile;
   bool _introShown = false;
+  static const _customTimesKey = 'meu_fit_custom_meal_times_v1';
+  Map<String, List<String>> _customMealTimes = {};
 
   @override
   void initState() {
     super.initState();
     _loadLoggedFoods();
+    _loadCustomMealTimes();
     _loadFoods();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadProfileAndShowIntro());
   }
@@ -87,20 +90,266 @@ class _MeuFitTacoFoodSearchScreenState
     {'day':'Sexta-feira','meals':[['07:30','Café da manhã','Pão 50 g, 2 ovos e banana 1 unidade'],['10:30','Lanche','Laranja 1 unidade e aveia 15 g'],['12:30','Almoço','Arroz 100 g, feijão 100 g, carne magra 100 g e salada 100 g'],['16:00','Lanche da tarde','Mandioca cozida 100 g e ovo cozido 1 unidade'],['19:30','Jantar','Arroz 80 g, feijão 80 g, sardinha 100 g e legumes 100 g']]}
   ];
 
+  Future<void> _loadCustomMealTimes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_customTimesKey);
+    if (raw == null || !mounted) return;
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      setState(() => _customMealTimes = decoded.map(
+        (day, times) => MapEntry(day, (times as List<dynamic>).map((v) => v.toString()).toList()),
+      ));
+    } catch (_) {
+      // Um registro antigo inválido não deve bloquear o cardápio.
+    }
+  }
+
+  Future<void> _addMealTime(String day) async {
+    final controller = TextEditingController();
+    TimeOfDay? selectedTime;
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF202020),
+          title: const Text('Adicionar horário'),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Text('Escolha um horário para criar outra refeição neste dia.'),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.schedule),
+              label: Text(selectedTime == null ? 'Selecionar horário' : selectedTime!.format(context)),
+              onPressed: () async {
+                final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                if (picked != null) setDialogState(() => selectedTime = picked);
+              },
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: controller,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(labelText: 'Nome da refeição', hintText: 'Ex.: Ceia'),
+            ),
+          ]),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancelar')),
+            FilledButton(
+              onPressed: selectedTime == null ? null : () {
+                final label = controller.text.trim().isEmpty ? 'Nova refeição' : controller.text.trim();
+                Navigator.pop(dialogContext, '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}|$label');
+              },
+              child: const Text('Adicionar'),
+            ),
+          ],
+        ),
+      ),
+    );
+    controller.dispose();
+    if (result == null || !mounted) return;
+    final updated = Map<String, List<String>>.from(_customMealTimes);
+    updated[day] = [...(updated[day] ?? []), result]..sort();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_customTimesKey, jsonEncode(updated));
+    if (mounted) setState(() => _customMealTimes = updated);
+  }
+
+  String _foodSearchKey(String value) => value
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9áàâãéêíóôõúç ]'), ' ')
+      .replaceAll(RegExp(r'\\s+'), ' ')
+      .trim();
+
+  Future<void> _openMealDetails(String day, List<String> meal) async {
+    final description = meal[2];
+    final parts = description
+        .split(RegExp(r',|\\s+e\\s+', caseSensitive: false))
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .toList();
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF202020),
+        title: Text(meal[1], style: const TextStyle(fontWeight: FontWeight.w900)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Text('$day · ${meal[0]}', style: const TextStyle(color: Color(0xFFC9F31D), fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              const Text('Alimentos deste horário', style: TextStyle(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 8),
+              for (final part in parts)
+                _buildMealFoodRow(part),
+              const SizedBox(height: 12),
+              const Text(
+                'A tabela apresenta valores por 100 g quando o alimento é encontrado na base TACO. Para itens sem correspondência exata, pesquise o nome no catálogo abaixo e confira o preparo antes de usar os valores.',
+                style: TextStyle(color: Colors.white60, fontSize: 11, height: 1.4),
+              ),
+              const SizedBox(height: 8),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  _searchController.text = '';
+                  FocusScope.of(context).unfocus();
+                },
+                icon: const Icon(Icons.search),
+                label: const Text('Pesquisar qualquer alimento da TACO'),
+              ),
+            ],
+          ),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Fechar'))],
+      ),
+    );
+  }
+
+  Future<void> _openCustomMealDetails(String day, String entry) async {
+    final parts = entry.split('|');
+    final time = parts.first;
+    final name = parts.length > 1 ? parts[1] : 'Nova refeição';
+    final foodController = TextEditingController();
+    final foods = <String>[];
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF202020),
+          title: Text(name),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text('$day · $time', style: const TextStyle(color: Color(0xFFC9F31D))),
+              const SizedBox(height: 12),
+              TextField(controller: foodController, decoration: const InputDecoration(labelText: 'Adicionar alimento', hintText: 'Ex.: pão, iogurte, banana')),
+              const SizedBox(height: 8),
+              FilledButton.icon(
+                onPressed: () {
+                  final value = foodController.text.trim();
+                  if (value.isEmpty) return;
+                  setDialogState(() { foods.add(value); foodController.clear(); });
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Adicionar alimento à refeição'),
+              ),
+              const SizedBox(height: 8),
+              if (foods.isEmpty) const Text('Adicione alimentos a este horário. Depois, toque em cada alimento para pesquisar a tabela nutricional.', style: TextStyle(color: Colors.white70)),
+              for (final food in foods) _buildMealFoodRow(food),
+            ]),
+          ),
+          actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Fechar'))],
+        ),
+      ),
+    );
+    foodController.dispose();
+  }
+
+  Widget _buildMealFoodRow(String itemText) {
+    final query = _foodSearchKey(itemText.replaceAll(RegExp(r'\\d+(?:[.,]\\d+)?\\s*(?:g|ml|unidade|unidades|ovo|ovos)?', caseSensitive: false), ' '));
+    Map<String, dynamic>? match;
+    int bestScore = 0;
+    for (final food in _foods) {
+      final name = _foodSearchKey((food['description'] ?? '').toString());
+      if (name.isEmpty || query.isEmpty) continue;
+      final tokens = query.split(' ').where((token) => token.length > 2).toSet();
+      final score = tokens.where((token) => name.contains(token)).length;
+      if (score > bestScore) {
+        bestScore = score;
+        match = food;
+      }
+    }
+    final food = match;
+    final matched = food != null && bestScore > 0;
+    final portion = RegExp(r'(\\d+(?:[.,]\\d+)?)\\s*g\\b', caseSensitive: false).firstMatch(itemText);
+    final grams = portion == null ? 100.0 : (double.tryParse(portion.group(1)!.replaceAll(',', '.')) ?? 100);
+    final kcal = food?['energy_kcal'];
+    final protein = food?['protein_g'];
+    final carbs = food?['carbohydrate_g'];
+    final fat = food?['lipids_g'];
+    String scaled(dynamic value) => value is num
+        ? (value * grams / 100).toStringAsFixed(1).replaceAll('.', ',')
+        : '—';
+    return Card(
+      color: const Color(0xFF292929),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        title: Text(itemText, style: const TextStyle(fontWeight: FontWeight.w700)),
+        subtitle: Text(matched
+            ? 'Correspondência provável: ${food!['description']}\\nPorção calculada: ${grams.toStringAsFixed(0)} g · ${scaled(kcal)} kcal · P ${scaled(protein)} g · C ${scaled(carbs)} g · G ${scaled(fat)} g'
+            : 'Não foi possível associar automaticamente a um alimento da TACO. Pesquise pelo nome no catálogo para consultar a tabela nutricional.',
+          style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.45)),
+        isThreeLine: true,
+        trailing: IconButton(
+          tooltip: 'Consultar alimento',
+          icon: const Icon(Icons.search, color: Color(0xFFC9F31D)),
+          onPressed: () {
+            Navigator.of(context).pop();
+            _searchController.text = itemText;
+            setState(() {});
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _weeklyMenuSection() {
     const lime = Color(0xFFC9F31D);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Text('SEU CARDÁPIO DA SEMANA', style: TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.1)),
       const SizedBox(height: 5), const Text('Toque em um dia para abrir as refeições', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
       const SizedBox(height: 10),
-      ..._weeklyMenu.map((day) => Card(color: const Color(0xFF202020), margin: const EdgeInsets.only(bottom: 8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)), child: ExpansionTile(
-        leading: const Icon(Icons.calendar_today_rounded, color: lime), title: Text(day['day'] as String, style: const TextStyle(fontWeight: FontWeight.w800)),
-        subtitle: const Text('5 refeições · exemplo econômico', style: TextStyle(color: Colors.white60, fontSize: 12)),
-        children: [for (final meal in day['meals'] as List<List<String>>) Padding(padding: const EdgeInsets.fromLTRB(16, 5, 16, 12), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(width: 48, child: Text(meal[0], style: const TextStyle(color: lime, fontWeight: FontWeight.w800, fontSize: 12)),), const SizedBox(width: 8),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(meal[1], style: const TextStyle(fontWeight: FontWeight.w800)), const SizedBox(height: 3), Text(meal[2], style: const TextStyle(color: Colors.white70, height: 1.35, fontSize: 12))]))
-        ]))],
-      ))),
+      ..._weeklyMenu.map((day) {
+        final dayName = day['day'] as String;
+        final meals = day['meals'] as List<List<String>>;
+        final extraTimes = _customMealTimes[dayName] ?? const <String>[];
+        return Card(
+          color: const Color(0xFF202020),
+          margin: const EdgeInsets.only(bottom: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          child: ExpansionTile(
+            leading: const Icon(Icons.calendar_today_rounded, color: lime),
+            title: Text(dayName, style: const TextStyle(fontWeight: FontWeight.w800)),
+            subtitle: Text('${meals.length + extraTimes.length} refeições · toque em um horário para ver os alimentos',
+              style: const TextStyle(color: Colors.white60, fontSize: 12)),
+            children: [
+              for (final meal in meals)
+                InkWell(
+                  onTap: () => _openMealDetails(dayName, meal),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      SizedBox(width: 48, child: Text(meal[0], style: const TextStyle(color: lime, fontWeight: FontWeight.w800, fontSize: 12))),
+                      const SizedBox(width: 8),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(meal[1], style: const TextStyle(fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 3),
+                        Text(meal[2], style: const TextStyle(color: Colors.white70, height: 1.35, fontSize: 12)),
+                        const SizedBox(height: 4),
+                        const Text('Ver alimentos e tabela nutricional ›', style: TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w700)),
+                      ])),
+                    ]),
+                  ),
+                ),
+              for (final entry in extraTimes)
+                ListTile(
+                  leading: const Icon(Icons.schedule_rounded, color: lime),
+                  title: Text(entry.split('|').length > 1 ? entry.split('|')[1] : 'Nova refeição'),
+                  subtitle: Text('${entry.split('|').first} · horário personalizado'),
+                  onTap: () => _openCustomMealDetails(dayName, entry),
+                ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                child: OutlinedButton.icon(
+                  onPressed: () => _addMealTime(dayName),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Adicionar outro horário'),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
       const SizedBox(height: 6),
       const Text('Porções ilustrativas, não uma prescrição individual. Calorias e proporções de nutrientes dependem de idade, atividade, objetivo, preferências e condições de saúde. Para metas precisas, procure nutricionista.', style: TextStyle(color: Colors.white54, fontSize: 11, height: 1.4)),
       const SizedBox(height: 8),
