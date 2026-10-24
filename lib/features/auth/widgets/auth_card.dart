@@ -20,6 +20,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wger/core/app_link_router.dart';
 import 'package:wger/core/app_settings_notifier.dart';
 import 'package:wger/core/consts.dart';
@@ -181,6 +182,12 @@ class _AuthCardState extends ConsumerState<AuthCard> {
           serverUrl: serverUrl,
           locale: Localizations.localeOf(context).languageCode,
         );
+      }
+
+      // Keep the account username locally so the dashboard can greet the user by name.
+      if (res == LoginActions.proceed && _usernameController.text.trim().isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('meu_fit_display_name_v1', _usernameController.text.trim());
       }
 
       // The "update required" screens are handled reactively by main.dart's
