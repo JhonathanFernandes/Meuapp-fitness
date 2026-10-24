@@ -17,9 +17,7 @@
  */
 
 import 'package:material_ui/material_ui.dart';
-import 'package:wger/core/widgets/core.dart';
 import 'package:wger/features/exercises/models/translation.dart';
-import 'package:wger/l10n/generated/app_localizations.dart';
 
 class AliasesSection extends StatelessWidget {
   final Translation translation;
@@ -39,13 +37,19 @@ class AliasesSection extends StatelessWidget {
         .map((item) => item.alias.trim())
         .where((alias) => alias.isNotEmpty && !_looksLikeEnglish(alias))
         .toList(growable: false);
-    if (aliases.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        MutedText(
-          AppLocalizations.of(context).alsoKnownAs(aliases.join(', ')),
+        Text(
+          'Outros nomes',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          aliases.isEmpty
+              ? 'Nenhum outro nome cadastrado.'
+              : aliases.join(', '),
         ),
         const SizedBox(height: 9),
       ],
