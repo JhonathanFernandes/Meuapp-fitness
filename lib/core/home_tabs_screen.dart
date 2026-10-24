@@ -25,7 +25,7 @@ import 'package:wger/features/account/providers/timezone_sync.dart';
 import 'package:wger/features/health/providers/health_sync.dart';
 import 'package:wger/features/measurements/screens/measurement_categories_screen.dart';
 import 'package:wger/features/nutrition/screens/nutritional_plans_screen.dart';
-import 'package:wger/features/routines/screens/routine_list_screen.dart';
+import 'package:wger/features/smart_training/meu_fit_workouts_screen.dart';
 import 'package:wger/l10n/generated/app_localizations.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 import 'package:wger/features/measurements/screens/weight_screen.dart';
@@ -84,7 +84,7 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
 
   final _screenList = [
     const DashboardScreen(),
-    const RoutineListScreen(),
+    const MeuFitWorkoutsScreen(),
     const NutritionalPlansScreen(),
     const MeasurementCategoriesScreen(),
     const _MeuFitProfileScreen(),
