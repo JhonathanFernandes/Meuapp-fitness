@@ -28,24 +28,30 @@ class ImagesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (exercise.images.isEmpty) {
-      final muscleNames = exercise.muscles
-          .map((muscle) => muscle.nameTranslated(context))
-          .join(' ');
-      final query = muscleNames.isEmpty
-          ? exercise.getTranslation(Localizations.localeOf(context).languageCode).name
-          : muscleNames;
-      final uri = Uri.https('www.google.com', '/search', {
-        'tbm': 'isch',
-        'q': 'anatomia músculos $query',
-      });
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Imagem do exercício', style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
+    final muscleNames = exercise.muscles
+        .map((muscle) => muscle.nameTranslated(context))
+        .join(' ');
+    final exerciseName =
+        exercise.getTranslation(Localizations.localeOf(context).languageCode).name;
+    final query = muscleNames.isEmpty ? exerciseName : muscleNames;
+    final uri = Uri.https('www.google.com', '/search', {
+      'tbm': 'isch',
+      'q': 'anatomia músculos $query',
+    });
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Imagem do exercício',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          if (exercise.images.isNotEmpty)
+            CarouselImages(images: exercise.images)
+          else ...[
             const Text('Ainda não há foto deste exercício no catálogo.'),
             const SizedBox(height: 6),
             OutlinedButton.icon(
@@ -54,16 +60,9 @@ class ImagesSection extends StatelessWidget {
               label: const Text('Buscar imagens dos músculos na internet'),
             ),
           ],
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CarouselImages(images: exercise.images),
-        const SizedBox(height: 9),
-      ],
+          const SizedBox(height: 9),
+        ],
+      ),
     );
   }
 }
