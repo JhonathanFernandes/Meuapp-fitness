@@ -150,16 +150,30 @@ class MeuFitWorkoutsScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                const Text('ESCOLHA O DIA', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                const SizedBox(height: 10),
+                const SizedBox(height: 22),
+                const Row(
+                  children: [
+                    Icon(Icons.calendar_month_rounded, color: _lime, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text('SUA PROGRAMAÇÃO',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.1)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                const Text('Escolha um dia para ver a sessão completa, com séries, repetições e descanso.',
+                  style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.4)),
+                const SizedBox(height: 13),
                 for (var i = 0; i < plan.length; i++)
                   _WorkoutWeekdayCard(
                     weekday: _weekdays[schedule[i]],
                     workout: plan[i],
                     onTap: () {
                       final matches = catalog.value == null
-                          ? <MeuFitExerciseMatch>[]
+                          ? plan[i].exercises
+                              .map((exercise) => MeuFitExerciseMatch(exercise, null))
+                              .toList(growable: false)
                           : const MeuFitExerciseMatcher().match(
                               plan[i].exercises,
                               catalog.value!.exercises,
@@ -307,12 +321,17 @@ class MeuFitWorkoutDayScreen extends StatelessWidget {
                   child: Text('Hoje é dia de recuperação. Descanse e retome a rotina no próximo dia programado.', style: TextStyle(color: Colors.white70, height: 1.5)),
                 ),
               )
-            else if (catalogLoading)
-              const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator(color: lime)))
-            else if (catalogError)
-              const Text('Não foi possível carregar o catálogo de exercícios. Tente novamente quando houver conexão.', style: TextStyle(color: Colors.white70))
-            else
-              for (final match in matches)
+            if (catalogLoading || catalogError)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  catalogLoading
+                      ? 'A lista completa já está disponível. Estamos carregando as fichas visuais dos exercícios.'
+                      : 'Catálogo visual indisponível no momento; os exercícios do seu plano continuam visíveis.',
+                  style: const TextStyle(color: Colors.white54, fontSize: 12, height: 1.4),
+                ),
+              ),
+            for (final match in matches)
                 Card(
                   color: const Color(0xFF202020),
                   margin: const EdgeInsets.only(bottom: 10),
