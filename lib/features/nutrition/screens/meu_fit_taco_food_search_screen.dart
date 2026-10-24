@@ -33,6 +33,8 @@ class _MeuFitTacoFoodSearchScreenState
   static const _customFoodsKey = 'meu_fit_custom_meal_foods_v1';
   Map<String, List<String>> _customMealTimes = {};
   Map<String, List<String>> _customMealFoods = {};
+  Map<String, Map<String, dynamic>> _confirmedMealFoods = {};
+  static const _confirmedMealFoodsKey = 'meu_fit_confirmed_meal_foods_v1';
 
   @override
   void initState() {
@@ -40,6 +42,7 @@ class _MeuFitTacoFoodSearchScreenState
     _loadLoggedFoods();
     _loadCustomMealTimes();
     _loadCustomMealFoods();
+    _loadConfirmedMealFoods();
     _loadFoods();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadProfileAndShowIntro());
   }
@@ -123,6 +126,20 @@ class _MeuFitTacoFoodSearchScreenState
     }
   }
 
+  Future<void> _loadConfirmedMealFoods() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_confirmedMealFoodsKey);
+    if (raw == null || !mounted) return;
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      setState(() => _confirmedMealFoods = decoded.map(
+        (key, value) => MapEntry(key, Map<String, dynamic>.from(value as Map)),
+      ));
+    } catch (_) {
+      // Um registro inválido não deve bloquear o cardápio.
+    }
+  }
+
   Future<void> _addMealTime(String day) async {
     final controller = TextEditingController();
     TimeOfDay? selectedTime;
@@ -178,8 +195,34 @@ class _MeuFitTacoFoodSearchScreenState
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 
+  List<String> _mealForCurrentProfile(List<String> meal) {
+    final profile = _profile;
+    if (profile == null) return meal;
+    var description = meal[2];
+    // Ajusta as opções demonstrativas por objetivo, sem inventar meta calórica.
+    if (profile.goal == 'emagrecer') {
+      description = description
+          .replaceAll('Pão 50 g', 'Pão integral 50 g')
+          .replaceAll('Arroz cozido 100 g', 'Arroz cozido 80 g')
+          .replaceAll('Arroz 100 g', 'Arroz 80 g')
+          .replaceAll('Arroz 80 g', 'Arroz 80 g')
+          .replaceAll('Amendoim 15 g', 'Fruta 130 g');
+    } else if (profile.goal == 'ganhar_massa') {
+      description = description
+          .replaceAll('Arroz cozido 100 g', 'Arroz cozido 130 g')
+          .replaceAll('Arroz 100 g', 'Arroz 130 g')
+          .replaceAll('Arroz 80 g', 'Arroz 120 g')
+          .replaceAll('frango 100 g', 'frango 130 g')
+          .replaceAll('Frango 100 g', 'Frango 130 g')
+          .replaceAll('carne moída magra 100 g', 'carne moída magra 130 g')
+          .replaceAll('sardinha 100 g', 'sardinha 130 g')
+          .replaceAll('2 ovos', '3 ovos');
+    }
+    return [meal[0], meal[1], description];
+  }
+
   Future<void> _openMealDetails(String day, List<String> meal) async {
-    final description = meal[2];
+    final effectiveMeal = _mealForCurrentProfile(meal);\n    final description = effectiveMeal[2];
     final parts = description
         .split(RegExp(r',|\s+e\s+', caseSensitive: false))
         .map((part) => part.trim())
@@ -189,13 +232,13 @@ class _MeuFitTacoFoodSearchScreenState
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF202020),
-        title: Text(meal[1], style: const TextStyle(fontWeight: FontWeight.w900)),
+        title: Text(effectiveMeal[1], style: const TextStyle(fontWeight: FontWeight.w900)),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView(
             shrinkWrap: true,
             children: [
-              Text('$day · ${meal[0]}', style: const TextStyle(color: Color(0xFFC9F31D), fontWeight: FontWeight.bold)),
+              Text('$day · ${effectiveMeal[0]}', style: const TextStyle(color: Color(0xFFC9F31D), fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               const Text('Alimentos deste horário', style: TextStyle(fontWeight: FontWeight.w800)),
               const SizedBox(height: 8),
@@ -271,24 +314,30 @@ class _MeuFitTacoFoodSearchScreenState
   }
 
   Widget _buildMealFoodRow(String itemText, BuildContext dialogContext) {
-    final portion = RegExp(r'(\d+(?:[.,]\d+)?)\s*g\b', caseSensitive: false).firstMatch(itemText);
-    final grams = portion == null
-        ? null
-        : double.tryParse(portion.group(1)!.replaceAll(',', '.'));
+    final confirmed = _confirmedMealFoods[itemText];
+    final food = confirmed == null ? null : _foods.cast<Map<String, dynamic>?>().firstWhere(
+      (entry) => entry?['id'] == confirmed['foodId'],
+      orElse: () => null,
+    );
+    final grams = confirmed?['grams'] is num ? (confirmed!['grams'] as num).toDouble() : null;
+    String n(dynamic value) => value is num && grams != null
+        ? (value * grams / 100).toStringAsFixed(1).replaceAll('.', ',')
+        : '—';
     return Card(
       color: const Color(0xFF292929),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         title: Text(itemText, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(
-          grams == null
-              ? 'Alimento ainda não confirmado na TACO. Selecione a correspondência correta para ver os nutrientes; o peso da unidade não será presumido.'
-              : 'Porção indicada: ${grams.toStringAsFixed(grams == grams.roundToDouble() ? 0 : 1).replaceAll('.', ',')} g. Confirme o alimento/preparo na TACO para calcular calorias, proteínas, carboidratos, gorduras, fibras e sódio.',
+          food != null && grams != null
+              ? 'TACO confirmado: ${food['description']} · ${grams.toStringAsFixed(grams == grams.roundToDouble() ? 0 : 1).replaceAll('.', ',')} g\n${n(food['energy_kcal'])} kcal · proteína ${n(food['protein_g'])} g · carboidratos ${n(food['carbohydrate_g'])} g · gorduras ${n(food['lipids_g'])} g · fibras ${n(food['dietary_fiber_g'])} g · sódio ${n(food['sodium_mg'])} mg'
+              : 'Ainda sem correspondência confirmada. Escolha o alimento exato na TACO e informe a quantidade em gramas; não será presumido o peso de unidades.',
           style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.45),
         ),
+        isThreeLine: true,
         trailing: IconButton(
           tooltip: 'Selecionar alimento exato na TACO',
-          icon: const Icon(Icons.search, color: Color(0xFFC9F31D)),
+          icon: Icon(food != null && grams != null ? Icons.edit : Icons.search, color: const Color(0xFFC9F31D)),
           onPressed: () => _chooseTacoFoodForMeal(itemText, dialogContext),
         ),
       ),
@@ -372,9 +421,20 @@ class _MeuFitTacoFoodSearchScreenState
                 onPressed: selected == null || grams == null || grams <= 0
                     ? null
                     : () {
+                        final picked = selected!;
+                        final confirmed = Map<String, Map<String, dynamic>>.from(_confirmedMealFoods);
+                        confirmed[itemText] = {
+                          'foodId': picked['id'],
+                          'name': (picked['description'] ?? 'Alimento').toString(),
+                          'grams': grams,
+                        };
+                        SharedPreferences.getInstance().then((prefs) async {
+                          await prefs.setString(_confirmedMealFoodsKey, jsonEncode(confirmed));
+                          if (mounted) setState(() => _confirmedMealFoods = confirmed);
+                        });
                         Navigator.pop(context);
                         ScaffoldMessenger.of(this.context).showSnackBar(
-                          SnackBar(content: Text('Tabela calculada para ${grams.toStringAsFixed(1).replaceAll('.', ',')} g de ${selected!['description']}. Para incluir no diário, use a pesquisa principal e registre a porção.')),
+                          SnackBar(content: Text('Valores da TACO salvos para ${grams.toStringAsFixed(1).replaceAll('.', ',')} g de ${picked['description']}.')),
                         );
                       },
                 child: const Text('Confirmar valores'),
@@ -473,7 +533,7 @@ class _MeuFitTacoFoodSearchScreenState
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(meal[1], style: const TextStyle(fontWeight: FontWeight.w800)),
                         const SizedBox(height: 3),
-                        Text(meal[2], style: const TextStyle(color: Colors.white70, height: 1.35, fontSize: 12)),
+                        Text(_mealForCurrentProfile(meal)[2], style: const TextStyle(color: Colors.white70, height: 1.35, fontSize: 12)),
                         const SizedBox(height: 4),
                         const Text('Ver alimentos e tabela nutricional ›', style: TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w700)),
                       ])),
