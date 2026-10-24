@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 import 'package:wger/features/smart_training/starter_workout_planner.dart';
+import 'package:wger/features/smart_training/meu_fit_workouts_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -217,7 +218,10 @@ class _WorkoutDayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     const lime = Color(0xFFC9F31D);
     final count = workout.exercises.length;
-    return Container(
+    return InkWell(
+      borderRadius: BorderRadius.circular(19),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const MeuFitWorkoutsScreen())),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 11),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: const Color(0xFF1D1D1D), borderRadius: BorderRadius.circular(19), border: Border.all(color: Colors.white.withValues(alpha: 0.06))),
@@ -250,6 +254,7 @@ class _WorkoutDayCard extends StatelessWidget {
           ])),
         if (count > 3) Padding(padding: const EdgeInsets.only(top: 2), child: Text('+ ' + (count - 3).toString() + ' exercícios', style: const TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w700))),
       ]),
+      ),
     );
   }
 }
