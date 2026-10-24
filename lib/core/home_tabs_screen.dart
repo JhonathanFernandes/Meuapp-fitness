@@ -198,6 +198,7 @@ class _MeuFitProfileScreenState extends State<_MeuFitProfileScreen> {
   static const _coverKey = 'meu_fit_profile_cover_path_v1';
   static const _nameKey = 'meu_fit_display_name_v1';
   final _picker = ImagePicker();
+  final _nameController = TextEditingController();
   String? _coverPath;
   String? _displayName;
   bool _loadingCover = true;
@@ -215,9 +216,33 @@ class _MeuFitProfileScreenState extends State<_MeuFitProfileScreen> {
     if (!mounted) return;
     setState(() {
       _displayName = prefs.getString(_nameKey);
+      _nameController.text = _displayName ?? '';
       _coverPath = savedPath != null && File(savedPath).existsSync() ? savedPath : null;
       _loadingCover = false;
     });
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveDisplayName() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty || name.toLowerCase() == 'user') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Digite seu nome para salvar.')),
+      );
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_nameKey, name);
+    if (!mounted) return;
+    setState(() => _displayName = name);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Nome salvo! Ele aparecerá na tela inicial.')),
+    );
   }
 
   Future<void> _chooseCover() async {
@@ -366,6 +391,40 @@ class _MeuFitProfileScreenState extends State<_MeuFitProfileScreen> {
               ),
               if (_loadingCover) const LinearProgressIndicator(minHeight: 2, color: _lime),
               const SizedBox(height: 22),
+              const Text('SEU NOME', style: TextStyle(color: _lime, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+              const SizedBox(height: 10),
+              Card(
+                color: const Color(0xFF242424),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextField(
+                        controller: _nameController,
+                        textCapitalization: TextCapitalization.words,
+                        textInputAction: TextInputAction.done,
+                        decoration: const InputDecoration(
+                          labelText: 'Como devemos chamar você?',
+                          hintText: 'Digite seu nome',
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                        onSubmitted: (_) => _saveDisplayName(),
+                      ),
+                      const SizedBox(height: 10),
+                      FilledButton(
+                        onPressed: _loadingCover ? null : _saveDisplayName,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _lime,
+                          foregroundColor: Colors.black,
+                        ),
+                        child: const Text('Salvar nome'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
               const Text('DADOS DO PERFIL', style: TextStyle(color: _lime, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
               const SizedBox(height: 10),
               Card(
