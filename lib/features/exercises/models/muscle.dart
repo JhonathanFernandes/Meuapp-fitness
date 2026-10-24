@@ -36,8 +36,46 @@ class Muscle extends Equatable {
   @override
   List<Object?> get props => [id, name, isFront];
 
+  static const Map<String, String> _nomesPt = {
+    'external obliques': 'Oblíquos externos',
+    'internal obliques': 'Oblíquos internos',
+    'rectus abdominis': 'Reto abdominal',
+    'abs': 'Abdômen',
+    'abdominals': 'Abdômen',
+    'pectoralis major': 'Peitoral maior',
+    'pectoralis minor': 'Peitoral menor',
+    'biceps brachii': 'Bíceps',
+    'triceps brachii': 'Tríceps',
+    'deltoid': 'Deltoides',
+    'quadriceps femoris': 'Quadríceps',
+    'hamstrings': 'Posteriores da coxa',
+    'gluteus maximus': 'Glúteo máximo',
+    'gluteus medius': 'Glúteo médio',
+    'gastrocnemius': 'Gastrocnêmio',
+    'soleus': 'Sóleo',
+    'latissimus dorsi': 'Grande dorsal',
+    'trapezius': 'Trapézio',
+    'erector spinae': 'Eretores da coluna',
+    'brachialis': 'Braquial',
+    'brachioradialis': 'Braquiorradial',
+    'forearms': 'Antebraços',
+    'quadriceps': 'Quadríceps',
+    'glutes': 'Glúteos',
+    'calves': 'Panturrilhas',
+  };
+
   String nameTranslated(BuildContext context) {
-    return name + (nameEn.isNotEmpty ? ' (${getServerStringTranslation(nameEn, context)})' : '');
+    final language = Localizations.localeOf(context).languageCode;
+    if (language == 'pt') {
+      final english = nameEn.trim().toLowerCase();
+      final portuguese = _nomesPt[english];
+      if (portuguese != null) return portuguese;
+      if (name.trim().isNotEmpty && !name.trim().toLowerCase().contains(RegExp(r'^(external|internal|rectus|pectoralis|biceps|triceps|deltoid|quadriceps|gluteus|gastrocnemius|soleus|latissimus|trapezius|erector)'))) {
+        return name;
+      }
+      return name;
+    }
+    return name;
   }
 
   @override
