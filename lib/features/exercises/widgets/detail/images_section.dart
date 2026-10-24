@@ -33,10 +33,12 @@ class ImagesSection extends StatelessWidget {
         .join(' ');
     final exerciseName =
         exercise.getTranslation(Localizations.localeOf(context).languageCode).name;
-    final query = muscleNames.isEmpty ? exerciseName : muscleNames;
+    final query = [exerciseName, muscleNames]
+        .where((part) => part.trim().isNotEmpty)
+        .join(' ');
     final uri = Uri.https('www.google.com', '/search', {
       'tbm': 'isch',
-      'q': 'anatomia músculos $query',
+      'q': '$query exercício demonstração',
     });
 
     return Padding(
@@ -57,7 +59,7 @@ class ImagesSection extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: () => launchUrl(uri, mode: LaunchMode.externalApplication),
               icon: const Icon(Icons.image_search_outlined),
-              label: const Text('Buscar imagens dos músculos na internet'),
+              label: const Text('Buscar imagens do exercício na internet'),
             ),
           ],
           const SizedBox(height: 9),
