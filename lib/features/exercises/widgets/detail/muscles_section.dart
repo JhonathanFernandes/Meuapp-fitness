@@ -73,7 +73,7 @@ class MusclesSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const MuscleColorHelper(main: false),
-            ...exercise.musclesSecondary.map((e) => Text(e.name)),
+            ...exercise.musclesSecondary.map((e) => Text(e.nameTranslated(context))),
           ],
         ),
         const SizedBox(height: 9),
