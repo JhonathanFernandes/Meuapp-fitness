@@ -222,7 +222,8 @@ class _MeuFitTacoFoodSearchScreenState
   }
 
   Future<void> _openMealDetails(String day, List<String> meal) async {
-    final effectiveMeal = _mealForCurrentProfile(meal);\n    final description = effectiveMeal[2];
+    final effectiveMeal = _mealForCurrentProfile(meal);
+    final description = effectiveMeal[2];
     final parts = description
         .split(RegExp(r',|\s+e\s+', caseSensitive: false))
         .map((part) => part.trim())
