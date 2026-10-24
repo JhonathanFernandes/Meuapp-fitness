@@ -82,8 +82,6 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
 
   @override
   Widget build(BuildContext context) {
-    // One range for the whole screen, shared with the detail screens through
-    // the provider. The monthly range remains available for comparing progress.
     final range = ref.watch(chartRangeSettingProvider);
 
     return AsyncValueWidget<List<MeasurementCategory>>(
@@ -92,9 +90,6 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
       data: (categoriesList) {
         _ensureBodyMeasurementCategories(categoriesList);
 
-        // Keep body weight and the selected body measurements in this screen.
-        // Imported health readings and unrelated cards remain stored, but are
-        // not presented as fitness progress measurements.
         final topLevel = categoriesList.where((category) {
           if (category.parentId != null || category.isOfficialBodyWeight) {
             return false;
@@ -120,6 +115,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
             Expanded(
               child: CustomScrollView(
                 slivers: [
+                  // Weight is deliberately the first and most prominent item.
                   if (weightCard != null)
                     SliverPadding(
                       padding: const EdgeInsets.all(10),
@@ -150,7 +146,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
     );
   }
 
-  /// The body weight card, null while what it needs is still syncing.
+  /// The main body-weight card, null while its data is still syncing.
   Widget? _weightCard(BuildContext context, WidgetRef ref, ChartRange range) {
     final category = ref.watch(bodyWeightCategoryOnlyProvider).value;
     final profile = ref.watch(userProfileProvider).value;
@@ -161,7 +157,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
     return CategoriesCard(
       category,
       range: range,
-      title: AppLocalizations.of(context).weight,
+      title: 'Peso',
       displayUnit: weightDisplayUnit(profile.isMetric),
       displayUnitLabel: weightUnit(profile.isMetric, context),
       newEntryForm: WeightForm(category),
