@@ -426,7 +426,7 @@ class Exercise extends Equatable {
       ..sort((a, b) => b.key.length.compareTo(a.key.length));
     for (final entry in entries) {
       translated = translated.replaceAll(
-        RegExp(r'\\b' + RegExp.escape(entry.key) + r'\\b', caseSensitive: false),
+        RegExp(r'\b' + RegExp.escape(entry.key) + r'\b', caseSensitive: false),
         entry.value,
       );
     }
