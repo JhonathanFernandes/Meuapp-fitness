@@ -35,27 +35,79 @@ import 'package:wger/l10n/generated/app_localizations.dart';
 
 import 'categories_card.dart';
 
-class CategoriesList extends ConsumerWidget {
+/// Body measurements worth tracking for a practical monthly progress view.
+/// Values are entered in centimetres and the existing measurement history
+/// keeps each entry so the user can compare months.
+const _bodyMeasurementNames = <String>[
+  'Abdômen',
+  'Cintura',
+  'Peito',
+  'Ombros',
+  'Braços',
+  'Quadril',
+  'Coxas',
+  'Panturrilhas',
+];
+
+class CategoriesList extends ConsumerStatefulWidget {
   const CategoriesList();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CategoriesList> createState() => _CategoriesListState();
+}
+
+class _CategoriesListState extends ConsumerState<CategoriesList> {
+  bool _seedScheduled = false;
+
+  void _ensureBodyMeasurementCategories(List<MeasurementCategory> categories) {
+    if (_seedScheduled) return;
+    _seedScheduled = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      final existingNames = categories
+          .where((category) => category.metricType == MetricType.custom)
+          .map((category) => category.name.trim().toLowerCase())
+          .toSet();
+
+      for (final name in _bodyMeasurementNames) {
+        if (existingNames.contains(name.toLowerCase())) continue;
+        await ref.read(measurementProvider.notifier).addCategory(
+          MeasurementCategory(name: name, unit: 'cm'),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // One range for the whole screen, shared with the detail screens through
-    // the provider: picking it per card would put three buttons on every tile
+    // the provider. The monthly range remains available for comparing progress.
     final range = ref.watch(chartRangeSettingProvider);
 
     return AsyncValueWidget<List<MeasurementCategory>>(
-      // The categories alone: the cards read what they draw through the
-      // aggregated queries
       value: ref.watch(measurementCategoriesProvider),
       loggerName: 'CategoriesList',
       data: (categoriesList) {
-        // Children of multi-value groups are rendered inside their parent's
-        // tile, not as own grid items. Body weight keeps its full card on top
-        // of the grid instead of becoming a tile among the others.
-        final topLevel = categoriesList
-            .where((c) => c.parentId == null && !c.isOfficialBodyWeight)
-            .toList();
+        _ensureBodyMeasurementCategories(categoriesList);
+
+        // Keep body weight and the selected body measurements in this screen.
+        // Imported health readings and unrelated cards remain stored, but are
+        // not presented as fitness progress measurements.
+        final topLevel = categoriesList.where((category) {
+          if (category.parentId != null || category.isOfficialBodyWeight) {
+            return false;
+          }
+          if (category.metricType != MetricType.custom) return false;
+          return _bodyMeasurementNames.any(
+            (name) => name.toLowerCase() == category.name.trim().toLowerCase(),
+          );
+        }).toList()
+          ..sort((a, b) => _bodyMeasurementNames
+              .indexOf(a.name)
+              .compareTo(_bodyMeasurementNames.indexOf(b.name)));
+
         final weightCard = _weightCard(context, ref, range);
 
         return Column(
@@ -88,7 +140,6 @@ class CategoriesList extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  // Keeps the last row clear of the FAB
                   const SliverToBoxAdapter(child: SizedBox(height: 88)),
                 ],
               ),
@@ -100,10 +151,6 @@ class CategoriesList extends ConsumerWidget {
   }
 
   /// The body weight card, null while what it needs is still syncing.
-  ///
-  /// Presented like the weight screen it leads to rather than like the
-  /// category it is stored as: the values are shown in the profile unit
-  /// (entries can be stored in kg or lb) and entered with the quick steppers.
   Widget? _weightCard(BuildContext context, WidgetRef ref, ChartRange range) {
     final category = ref.watch(bodyWeightCategoryOnlyProvider).value;
     final profile = ref.watch(userProfileProvider).value;
