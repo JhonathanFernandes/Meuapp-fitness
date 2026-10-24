@@ -27,15 +27,12 @@ class AuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.sizeOf(context);
-    final scheme = Theme.of(context).colorScheme;
-    // The banner carries the white logo, so it has to stay dark in both modes.
-    // primary is the dark tone in light mode, primaryContainer in dark mode.
-    final isDark = scheme.brightness == Brightness.dark;
-    final bannerColor = isDark ? scheme.primaryContainer : scheme.primary;
-    final onBannerColor = isDark ? scheme.onPrimaryContainer : scheme.onPrimary;
+    const background = Color(0xFF101010);
+    const bannerColor = background;
+    const onBannerColor = Colors.white;
 
     return Scaffold(
-      backgroundColor: scheme.surface,
+      backgroundColor: background,
       body: Stack(
         children: [
           Positioned(
@@ -68,10 +65,11 @@ class AuthScreen extends StatelessWidget {
                       horizontal: 94.0,
                     ),
                     child: Text(
-                      'wger',
+                      'MEU FIT',
                       style: TextStyle(
                         color: onBannerColor.withValues(alpha: 0.7),
                         fontSize: 30,
+                        letterSpacing: 2,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
