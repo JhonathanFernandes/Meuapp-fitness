@@ -17,7 +17,7 @@
  */
 
 import 'package:material_ui/material_ui.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:video_player/video_player.dart';
 import 'package:wger/core/platform.dart';
 import 'package:wger/features/exercises/models/exercise.dart';
 import 'package:wger/features/exercises/widgets/videos.dart';
@@ -34,10 +34,8 @@ class VideosSection extends StatelessWidget {
     }
 
     if (exercise.videos.isEmpty) {
-      final name = exercise.getTranslation(Localizations.localeOf(context).languageCode).name;
-      final uri = Uri.https('www.youtube.com', '/results', {
-        'search_query': '$name execução correta exercício tutorial',
-      });
+      final localizedName = exercise.getTranslation(Localizations.localeOf(context).languageCode).name;
+      final englishName = exercise.getTranslation('en').name;
       return Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Column(
@@ -45,13 +43,7 @@ class VideosSection extends StatelessWidget {
           children: [
             Text('Vídeo de execução', style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
-            const Text('Este exercício ainda não tem vídeo próprio no catálogo.'),
-            const SizedBox(height: 6),
-            OutlinedButton.icon(
-              onPressed: () => launchUrl(uri, mode: LaunchMode.externalApplication),
-              icon: const Icon(Icons.play_circle_outline),
-              label: const Text('Buscar vídeo de demonstração'),
-            ),
+            _ExerciseDemoPlayer(exerciseName: localizedName, englishName: englishName),
           ],
         ),
       );
@@ -63,6 +55,124 @@ class VideosSection extends StatelessWidget {
         ...exercise.videos.map((v) => ExerciseVideoWidget(video: v)),
         const SizedBox(height: 9),
       ],
+    );
+  }
+}
+
+
+class _ExerciseDemoPlayer extends StatefulWidget {
+  const _ExerciseDemoPlayer({required this.exerciseName, required this.englishName});
+
+  final String exerciseName;
+  final String englishName;
+
+  @override
+  State<_ExerciseDemoPlayer> createState() => _ExerciseDemoPlayerState();
+}
+
+class _ExerciseDemoPlayerState extends State<_ExerciseDemoPlayer> {
+  VideoPlayerController? _controller;
+  bool _failed = false;
+
+  static const _base = 'https://pub-585d42eb1aa64a67aedf483ec328d3fe.r2.dev/exercise-videos/male/';
+  static const _videos = <String, String>{
+    'flexão inclinada': 'push-ups.mp4',
+    'incline push up': 'push-ups.mp4',
+    'incline push-up': 'push-ups.mp4',
+    'supino na máquina': 'barbell-bench-press.mp4',
+    'chest press': 'barbell-bench-press.mp4',
+    'bench press': 'barbell-bench-press.mp4',
+    'desenvolvimento na máquina': 'dumbbell-lateral-raise.mp4',
+    'shoulder press': 'dumbbell-lateral-raise.mp4',
+    'ponte de glúteos': 'glute-bridge.mp4',
+    'glute bridge': 'glute-bridge.mp4',
+    'elevação pélvica': 'hip-thrust.mp4',
+    'hip thrust': 'hip-thrust.mp4',
+    'mesa flexora': 'lying-leg-curl.mp4',
+    'lying leg curl': 'lying-leg-curl.mp4',
+    'leg press': 'leg-press.mp4',
+    'prancha': 'plank.mp4',
+    'plank': 'plank.mp4',
+    'bird dog': 'bird-dog.mp4',
+    'remada sentada': 'seated-cable-row.mp4',
+    'seated cable row': 'seated-cable-row.mp4',
+    'remada com elástico': 'seated-cable-row.mp4',
+    'desenvolvimento com elástico': 'shoulder-press.mp4',
+    'levantamento terra com mochila': 'deadlift.mp4',
+    'deadlift': 'deadlift.mp4',
+    'agachamento até uma cadeira': 'bodyweight-squat.mp4',
+    'bodyweight squat': 'bodyweight-squat.mp4',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    final filename = _videos[widget.exerciseName.toLowerCase()] ??
+        _videos[widget.englishName.toLowerCase()];
+    if (filename == null) {
+      _failed = true;
+      return;
+    }
+    _controller = VideoPlayerController.networkUrl(Uri.parse('$_base$filename'));
+    _controller!.initialize().then((_) {
+      if (mounted) setState(() {});
+    }).catchError((Object _) {
+      if (mounted) setState(() => _failed = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = _controller;
+    if (_failed || controller == null) {
+      return const Text(
+        'Ainda não há uma demonstração em vídeo disponível para este exercício.',
+      );
+    }
+    if (!controller.value.isInitialized) {
+      return const SizedBox(
+        height: 180,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        children: [
+          AspectRatio(
+            aspectRatio: controller.value.aspectRatio,
+            child: VideoPlayer(controller),
+          ),
+          Row(
+            children: [
+              IconButton(
+                tooltip: controller.value.isPlaying ? 'Pausar vídeo' : 'Reproduzir vídeo',
+                onPressed: () => setState(() {
+                  if (controller.value.isPlaying) {
+                    controller.pause();
+                  } else {
+                    controller.play();
+                  }
+                }),
+                icon: Icon(controller.value.isPlaying ? Icons.pause : Icons.play_arrow),
+              ),
+              Expanded(
+                child: VideoProgressIndicator(
+                  controller,
+                  allowScrubbing: true,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
