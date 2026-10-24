@@ -13,6 +13,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   late final Future<MeuFitOnboardingProfile?> _profileFuture;
+  late final Future<String?> _displayNameFuture;
   static const _lime = Color(0xFFC9F31D);
   static const _background = Color(0xFF101010);
   static const _surface = Color(0xFF1D1D1D);
@@ -21,6 +22,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _profileFuture = MeuFitOnboardingStorage().load();
+    _displayNameFuture = SharedPreferences.getInstance().then(
+      (prefs) => prefs.getString('meu_fit_display_name_v1'),
+    );
   }
 
   String _goalLabel(String goal) => switch (goal) {
@@ -94,7 +98,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const Text('BORA EVOLUIR?', style: TextStyle(color: _lime, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 2)),
               const SizedBox(height: 5),
               FutureBuilder<String?>(
-                future: SharedPreferences.getInstance().then((prefs) => prefs.getString('meu_fit_display_name_v1')),
+                future: _displayNameFuture,
                 builder: (context, nameSnapshot) {
                   final name = nameSnapshot.data?.trim();
                   return Text(
