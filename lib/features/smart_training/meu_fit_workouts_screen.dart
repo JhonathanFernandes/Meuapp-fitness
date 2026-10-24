@@ -400,7 +400,7 @@ class MeuFitWorkoutDayScreen extends StatelessWidget {
                   padding: EdgeInsets.all(18),
                   child: Text('Hoje é dia de recuperação. Descanse e retome a rotina no próximo dia programado.', style: TextStyle(color: Colors.white70, height: 1.5)),
                 ),
-              )
+              ),
             if (catalogLoading || catalogError)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
