@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wger/features/exercises/screens/exercise_screen.dart';
 import 'package:wger/features/exercises/providers/exercises_notifier.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
@@ -340,8 +341,15 @@ class MeuFitWorkoutDayScreen extends StatelessWidget {
                     onTap: () {
                       final exercise = match.exercise;
                       if (exercise == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Este exercício ainda não tem correspondência no catálogo com imagens e vídeos.')),
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => MeuFitExerciseFallbackScreen(
+                              exerciseName: match.planned.name,
+                              sets: match.planned.sets,
+                              reps: match.planned.reps,
+                              restSeconds: match.planned.restSeconds,
+                            ),
+                          ),
                         );
                         return;
                       }
@@ -356,6 +364,109 @@ class MeuFitWorkoutDayScreen extends StatelessWidget {
             const Text(
               'Faça os movimentos com controle, respeite seus limites e interrompa qualquer exercício que cause dor. Esta rotina é uma sugestão inicial.',
               style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.5),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/// Alternativa transparente quando o catálogo não tem mídia cadastrada para um exercício.
+class MeuFitExerciseFallbackScreen extends StatelessWidget {
+  const MeuFitExerciseFallbackScreen({
+    super.key,
+    required this.exerciseName,
+    required this.sets,
+    required this.reps,
+    required this.restSeconds,
+  });
+
+  final String exerciseName;
+  final int sets;
+  final String reps;
+  final int restSeconds;
+
+  String get _muscleGroup {
+    final name = exerciseName.toLowerCase();
+    if (name.contains('supino') || name.contains('flexão')) return 'peitoral, tríceps e ombros';
+    if (name.contains('remada')) return 'costas e bíceps';
+    if (name.contains('desenvolvimento')) return 'ombros e tríceps';
+    if (name.contains('pélvica') || name.contains('glúteos')) return 'glúteos e músculos do quadril';
+    if (name.contains('flexora')) return 'posteriores da coxa';
+    if (name.contains('leg press') || name.contains('agachamento')) return 'quadríceps e glúteos';
+    if (name.contains('prancha') || name.contains('bird dog')) return 'abdômen e músculos estabilizadores do tronco';
+    if (name.contains('terra')) return 'glúteos, posteriores da coxa e costas';
+    if (name.contains('alongamento') || name.contains('mobilidade')) return 'músculos e articulações envolvidos no movimento';
+    return 'consulte a demonstração e confirme a musculatura com um profissional';
+  }
+
+  Future<void> _openSearch(BuildContext context, Uri uri) async {
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível abrir o navegador neste aparelho.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const lime = Color(0xFFC9F31D);
+    final videoUri = Uri.https('www.youtube.com', '/results', {
+      'search_query': '$exerciseName execução correta exercício tutorial',
+    });
+    final imageUri = Uri.https('www.google.com', '/search', {
+      'tbm': 'isch',
+      'q': 'anatomia músculos $_muscleGroup exercício $exerciseName',
+    });
+
+    return Theme(
+      data: ThemeData.dark(useMaterial3: true).copyWith(
+        scaffoldBackgroundColor: const Color(0xFF101010),
+        colorScheme: const ColorScheme.dark(primary: lime),
+        appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF101010), foregroundColor: Colors.white),
+      ),
+      child: Scaffold(
+        appBar: AppBar(title: Text(exerciseName)),
+        body: ListView(
+          padding: const EdgeInsets.all(18),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(color: const Color(0xFF202020), borderRadius: BorderRadius.circular(18)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('SEU EXERCÍCIO', style: TextStyle(color: lime, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                const SizedBox(height: 10),
+                Text(exerciseName, style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w900)),
+                const SizedBox(height: 10),
+                Text('$sets séries × $reps', style: const TextStyle(color: Colors.white70)),
+                Text('Descanso: $restSeconds segundos', style: const TextStyle(color: Colors.white54)),
+              ]),
+            ),
+            const SizedBox(height: 18),
+            const Text('MÚSCULOS TRABALHADOS (ESTIMATIVA)', style: TextStyle(color: lime, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+            const SizedBox(height: 8),
+            Text(_muscleGroup, style: const TextStyle(fontSize: 17, height: 1.45)),
+            const SizedBox(height: 8),
+            const Text(
+              'O catálogo ainda não possui uma ficha completa para este exercício. Use as pesquisas abaixo para ver imagens anatômicas e uma demonstração; confirme a técnica e os músculos-alvo com um profissional.',
+              style: TextStyle(color: Colors.white60, height: 1.5),
+            ),
+            const SizedBox(height: 18),
+            OutlinedButton.icon(
+              onPressed: () => _openSearch(context, imageUri),
+              icon: const Icon(Icons.image_search_outlined),
+              label: const Text('Ver imagens dos músculos na internet'),
+              style: OutlinedButton.styleFrom(foregroundColor: lime, side: const BorderSide(color: lime), padding: const EdgeInsets.all(15)),
+            ),
+            const SizedBox(height: 10),
+            FilledButton.icon(
+              onPressed: () => _openSearch(context, videoUri),
+              icon: const Icon(Icons.play_circle_outline),
+              label: const Text('Ver vídeo da execução'),
+              style: FilledButton.styleFrom(backgroundColor: lime, foregroundColor: Colors.black, padding: const EdgeInsets.all(15)),
             ),
           ],
         ),
