@@ -48,8 +48,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     _profileFuture = MeuFitOnboardingStorage().load();
   }
 
-  Widget build(BuildContext context) {
-     switch (widget) {
+  Widget _getDashboardWidget(DashboardWidget widget) {
+    switch (widget) {
       case DashboardWidget.routines:
         return const DashboardRoutineWidget();
       case DashboardWidget.weight:
@@ -66,7 +66,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final isMobile = width < MATERIAL_XS_BREAKPOINT;
     final visibleWidgets = ref.watch(
