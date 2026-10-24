@@ -181,7 +181,7 @@ class _MeuFitTacoFoodSearchScreenState
               const Text('Alimentos deste horário', style: TextStyle(fontWeight: FontWeight.w800)),
               const SizedBox(height: 8),
               for (final part in parts)
-                _buildMealFoodRow(part),
+                _buildMealFoodRow(part, dialogContext),
               const SizedBox(height: 12),
               const Text(
                 'A tabela apresenta valores por 100 g quando o alimento é encontrado na base TACO. Para itens sem correspondência exata, pesquise o nome no catálogo abaixo e confira o preparo antes de usar os valores.',
@@ -235,7 +235,7 @@ class _MeuFitTacoFoodSearchScreenState
               ),
               const SizedBox(height: 8),
               if (foods.isEmpty) const Text('Adicione alimentos a este horário. Depois, toque em cada alimento para pesquisar a tabela nutricional.', style: TextStyle(color: Colors.white70)),
-              for (final food in foods) _buildMealFoodRow(food),
+              for (final food in foods) _buildMealFoodRow(food, dialogContext),
             ]),
           ),
           actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Fechar'))],
@@ -245,7 +245,7 @@ class _MeuFitTacoFoodSearchScreenState
     foodController.dispose();
   }
 
-  Widget _buildMealFoodRow(String itemText) {
+  Widget _buildMealFoodRow(String itemText, BuildContext dialogContext) {
     final query = _foodSearchKey(itemText.replaceAll(RegExp(r'\\d+(?:[.,]\\d+)?\\s*(?:g|ml|unidade|unidades|ovo|ovos)?', caseSensitive: false), ' '));
     Map<String, dynamic>? match;
     int bestScore = 0;
@@ -284,7 +284,7 @@ class _MeuFitTacoFoodSearchScreenState
           tooltip: 'Consultar alimento',
           icon: const Icon(Icons.search, color: Color(0xFFC9F31D)),
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(dialogContext).pop();
             _searchController.text = itemText;
             setState(() {});
           },
