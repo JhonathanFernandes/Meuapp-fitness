@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen();
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Loading...')));
+    return const Scaffold(backgroundColor: Color(0xFF101010), body: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.fitness_center, size: 54, color: Color(0xFFC9F31D)), SizedBox(height: 16), Text('MEU FIT', style: TextStyle(color: Color(0xFFC9F31D), fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 2)), SizedBox(height: 18), SizedBox(width: 120, child: LinearProgressIndicator(color: Color(0xFFC9F31D), backgroundColor: Color(0xFF242424)))])));
   }
 }
