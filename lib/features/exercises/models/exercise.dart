@@ -415,7 +415,7 @@ class Exercise extends Equatable {
 
   bool _looksLikeEnglish(String value) {
     final text = value.toLowerCase();
-    return RegExp(r'\b(with|and|for|from|the|to|your|keep|hold|slowly|start|return|alternate|added|stability|muscles|rectus|obliques|plank|bird dog|leg curl|hip thrust|incline|decline|standing|seated|lying|dumbbell|barbell|cable|machine|push up|pull down|deadlift|squat|crunch|row|press|raise|curl|extension)\b')
+    return RegExp(r'\b(with|and|for|from|the|to|your|this|that|are|is|keep|hold|slow|slowly|start|return|alternate|added|top|stability|muscles|rectus|obliques|plank|bird dog|leg curl|hip thrust|incline|decline|standing|seated|lying|dumbbell|barbell|cable|machine|push up|pull down|deadlift|squat|crunch|row|press|raise|curl|extension|perform|exercise|movement|position|feet|hands|repeat|breathe|weight|lower|target|muscle|should|finish)\b')
         .hasMatch(text);
   }
 
@@ -455,7 +455,8 @@ class Exercise extends Equatable {
     // termos em inglês ou estar parcialmente traduzido. Evita exibir esses
     // trechos crus na interface em português.
     final name = localizedName ??
-        (original.language.shortName.toLowerCase().startsWith('pt') &&
+        (originalName.isNotEmpty &&
+                original.language.shortName.toLowerCase().startsWith('pt') &&
                 !_looksLikeEnglish(originalName)
             ? originalName
             : _translateExerciseNameByTerms(originalName));
