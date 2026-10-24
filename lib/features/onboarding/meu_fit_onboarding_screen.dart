@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'meu_fit_onboarding_profile.dart';
 
 /// Fluxo inicial Meu Fit. Ainda precisa ser ligado à rota de entrada do app.
@@ -51,7 +52,13 @@ class _MeuFitOnboardingScreenState extends State<MeuFitOnboardingScreen> {
         child: TextFormField(
           controller: controller,
           keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-          decoration: _decoration(label, suffix),
+          inputFormatters: decimal
+              ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))]
+              : [FilteringTextInputFormatter.digitsOnly],
+          decoration: _decoration(label, suffix).copyWith(
+            hintText: decimal ? 'Ex.: 82,5' : null,
+            helperText: decimal ? 'Você pode usar vírgula nos decimais' : null,
+          ),
           validator: (value) {
             final parsed = double.tryParse((value ?? '').replaceAll(',', '.'));
             if (parsed == null || !parsed.isFinite || parsed <= 0) {
