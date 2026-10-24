@@ -198,20 +198,71 @@ class _MeuFitTacoFoodSearchScreenState
     }).take(100).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Alimentos da TACO')),
+      appBar: AppBar(
+        title: const Text('Dieta', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+        backgroundColor: const Color(0xFF101010),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar alimentos',
+            onPressed: _loadingList ? null : _loadFoods,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ],
+      ),
       body: _loadingList
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 5, 16, 28),
               children: [
-                const Text('DADOS NUTRICIONAIS',
-                    style: TextStyle(color: lime, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                const Text(
-                  'Pesquise alimentos da TACO (4ª edição, NEPA/UNICAMP). '
-                  'Os dados são consultados online; é necessária conexão com a internet.',
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF303A13), Color(0xFF20251A), Color(0xFF1B1B1B)],
+                    ),
+                    borderRadius: BorderRadius.circular(23),
+                    border: Border.all(color: lime.withValues(alpha: 0.45)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                          decoration: BoxDecoration(color: lime, borderRadius: BorderRadius.circular(8)),
+                          child: const Text('MEU FIT · ALIMENTAÇÃO',
+                            style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
+                        ),
+                        const Spacer(),
+                        const Icon(Icons.restaurant_menu_rounded, color: lime, size: 25),
+                      ]),
+                      const SizedBox(height: 17),
+                      const Text('Sua alimentação,\nsem complicação.',
+                        style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, height: 1.08, letterSpacing: -0.6)),
+                      const SizedBox(height: 8),
+                      const Text('Pesquise alimentos, veja os nutrientes por porção e registre o que comeu sem sair do aplicativo.',
+                        style: TextStyle(color: Colors.white70, height: 1.45, fontSize: 13)),
+                      const SizedBox(height: 16),
+                      Row(children: [
+                        const Icon(Icons.bolt_rounded, color: lime, size: 18),
+                        const SizedBox(width: 7),
+                        Expanded(child: Text('${_foods.length} alimentos na base TACO',
+                          style: const TextStyle(color: lime, fontWeight: FontWeight.w800, fontSize: 12))),
+                      ]),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 22),
+                const Text('ENCONTRE SEU ALIMENTO',
+                  style: TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+                const SizedBox(height: 5),
+                const Text('Pesquisa dentro do app',
+                  style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900)),
+                const SizedBox(height: 12),
                 TextField(
                   controller: _searchController,
                   onChanged: (_) => setState(() {}),
@@ -359,16 +410,58 @@ class _MeuFitTacoFoodSearchScreenState
                     style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
-                const SizedBox(height: 12),
-                Text('${results.length} resultados exibidos',
-                    style: const TextStyle(color: Colors.white70)),
-                ...results.map((food) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text((food['description'] ?? 'Alimento').toString()),
-                  subtitle: Text((food['category'] ?? '').toString()),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _selectFood(food),
-                )),
+                const SizedBox(height: 20),
+                Row(children: [
+                  const Expanded(child: Text('ALIMENTOS DA TACO',
+                    style: TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
+                  Text('${results.length} resultados',
+                    style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                ]),
+                const SizedBox(height: 8),
+                ...results.map((food) {
+                  final kcal = food['energy_kcal'];
+                  final protein = food['protein_g'];
+                  final selected = _selectedFood?['id'] == food['id'];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: selected ? const Color(0xFF292F1D) : const Color(0xFF202020),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: selected ? lime.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.05)),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(15),
+                        onTap: () => _selectFood(food),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(children: [
+                            Container(
+                              width: 42, height: 42,
+                              decoration: BoxDecoration(color: const Color(0xFF30351F), borderRadius: BorderRadius.circular(12)),
+                              child: const Icon(Icons.restaurant_rounded, color: lime, size: 20),
+                            ),
+                            const SizedBox(width: 11),
+                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text((food['description'] ?? 'Alimento').toString(),
+                                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                              const SizedBox(height: 4),
+                              Text((food['category'] ?? 'Alimento').toString(),
+                                style: const TextStyle(color: Colors.white54, fontSize: 10)),
+                              if (kcal is num || protein is num) ...[
+                                const SizedBox(height: 5),
+                                Text('${kcal is num ? kcal.toStringAsFixed(0) : '—'} kcal · Proteína ${protein is num ? protein.toStringAsFixed(1) : '—'} g / 100 g',
+                                  style: const TextStyle(color: lime, fontSize: 10, fontWeight: FontWeight.w700)),
+                              ],
+                            ])),
+                            const Icon(Icons.add_circle_outline_rounded, color: lime, size: 22),
+                          ]),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
                 if (results.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 24),
