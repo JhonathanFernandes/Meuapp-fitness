@@ -16,7 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wger/core/app_settings_notifier.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:wger/core/dashboard.dart';
@@ -173,77 +178,235 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
   }
 }
 
-class _MeuFitProfileScreen extends StatelessWidget {
+class _MeuFitProfileScreen extends StatefulWidget {
   const _MeuFitProfileScreen();
 
   @override
+  State<_MeuFitProfileScreen> createState() => _MeuFitProfileScreenState();
+}
+
+class _MeuFitProfileScreenState extends State<_MeuFitProfileScreen> {
+  static const _lime = Color(0xFFC9F31D);
+  static const _coverKey = 'meu_fit_profile_cover_path_v1';
+  static const _nameKey = 'meu_fit_display_name_v1';
+  final _picker = ImagePicker();
+  String? _coverPath;
+  String? _displayName;
+  bool _loadingCover = true;
+  bool _pickingCover = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfilePresentation();
+  }
+
+  Future<void> _loadProfilePresentation() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPath = prefs.getString(_coverKey);
+    if (!mounted) return;
+    setState(() {
+      _displayName = prefs.getString(_nameKey);
+      _coverPath = savedPath != null && File(savedPath).existsSync() ? savedPath : null;
+      _loadingCover = false;
+    });
+  }
+
+  Future<void> _chooseCover() async {
+    if (_pickingCover) return;
+    setState(() => _pickingCover = true);
+    try {
+      final picked = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 88,
+        maxWidth: 1800,
+      );
+      if (picked == null || !mounted) return;
+
+      // Keep a private copy in app storage; picker cache paths can be temporary.
+      final directory = await getApplicationDocumentsDirectory();
+      final destination = '${directory.path}/meu_fit_cover_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final savedFile = await File(picked.path).copy(destination);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_coverKey, savedFile.path);
+      if (!mounted) return;
+      setState(() => _coverPath = savedFile.path);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Foto de capa atualizada!')),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não foi possível salvar a foto. Tente escolher outra imagem.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _pickingCover = false);
+    }
+  }
+
+  Future<void> _removeCover() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_coverKey);
+    final oldPath = _coverPath;
+    if (mounted) setState(() => _coverPath = null);
+    if (oldPath != null) {
+      try { await File(oldPath).delete(); } catch (_) {}
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    const lime = Color(0xFFC9F31D);
     return Scaffold(
       appBar: AppBar(title: const Text('Meu perfil')),
       body: FutureBuilder<MeuFitOnboardingProfile?>(
         future: MeuFitOnboardingStorage().load(),
         builder: (context, snapshot) {
           final profile = snapshot.data;
+          final hasCover = _coverPath != null;
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             children: [
-              const CircleAvatar(
-                radius: 42,
-                backgroundColor: Color(0xFF242424),
-                child: Icon(Icons.person, size: 48, color: lime),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: SizedBox(
+                  height: 190,
+                  width: double.infinity,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (hasCover)
+                        Image.file(File(_coverPath!), fit: BoxFit.cover)
+                      else
+                        const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF344018), Color(0xFF202020), Color(0xFF121212)],
+                            ),
+                          ),
+                          child: Center(child: Icon(Icons.person, size: 74, color: _lime)),
+                        ),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.black.withValues(alpha: 0.08), Colors.black.withValues(alpha: 0.72)],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: 12,
+                        top: 12,
+                        child: PopupMenuButton<String>(
+                          tooltip: 'Editar foto de capa',
+                          icon: const Icon(Icons.more_horiz, color: Colors.white),
+                          color: const Color(0xFF242424),
+                          onSelected: (value) {
+                            if (value == 'edit') _chooseCover();
+                            if (value == 'remove') _removeCover();
+                          },
+                          itemBuilder: (_) => [
+                            const PopupMenuItem(value: 'edit', child: Text('Escolher foto')),
+                            if (hasCover) const PopupMenuItem(value: 'remove', child: Text('Remover foto')),
+                          ],
+                        ),
+                      ),
+                      Positioned(
+                        left: 16,
+                        right: 16,
+                        bottom: 16,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    (_displayName?.trim().isNotEmpty ?? false) ? _displayName!.trim() : 'Meu perfil',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(color: Colors.white, fontSize: 23, fontWeight: FontWeight.w900),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text('Seu espaço, sua evolução', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton.tonalIcon(
+                              onPressed: _pickingCover ? null : _chooseCover,
+                              icon: _pickingCover
+                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                                  : const Icon(Icons.add_a_photo_outlined, size: 18),
+                              label: Text(_pickingCover ? 'Salvando' : 'Editar capa'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: _lime,
+                                foregroundColor: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
-              const Center(child: Text('MEU FIT · MEU PERFIL',
-                style: TextStyle(color: lime, fontWeight: FontWeight.bold))),
-              const SizedBox(height: 20),
+              if (_loadingCover) const LinearProgressIndicator(minHeight: 2, color: _lime),
+              const SizedBox(height: 22),
+              const Text('DADOS DO PERFIL', style: TextStyle(color: _lime, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+              const SizedBox(height: 10),
               Card(
                 color: const Color(0xFF242424),
                 child: Column(children: [
-                  ListTile(title: const Text('Peso inicial'),
-                    subtitle: Text(profile == null ? 'Complete seu cadastro'
-                      : '${profile.weightKg.toStringAsFixed(1)} kg')),
-                  ListTile(title: const Text('Altura'),
-                    subtitle: Text(profile == null ? 'Não informada'
-                      : '${profile.heightCm.toStringAsFixed(0)} cm')),
-                  ListTile(title: const Text('Meta de treinos'),
-                    subtitle: Text(profile == null ? 'Não informada'
-                      : '${profile.daysPerWeek} dias por semana')),
+                  ListTile(
+                    leading: const Icon(Icons.monitor_weight_outlined, color: _lime),
+                    title: const Text('Peso inicial'),
+                    subtitle: Text(profile == null ? 'Complete seu cadastro' : '${profile.weightKg.toStringAsFixed(1)} kg'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.height, color: _lime),
+                    title: const Text('Altura'),
+                    subtitle: Text(profile == null ? 'Não informada' : '${profile.heightCm.toStringAsFixed(0)} cm'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.calendar_month_outlined, color: _lime),
+                    title: const Text('Meta de treinos'),
+                    subtitle: Text(profile == null ? 'Não informada' : '${profile.daysPerWeek} dias por semana'),
+                  ),
                 ]),
               ),
               const SizedBox(height: 12),
               ListTile(
-                leading: const Icon(Icons.monitor_weight, color: lime),
+                leading: const Icon(Icons.monitor_weight, color: _lime),
                 title: const Text('Meu peso e histórico'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.pushNamed(context, WeightScreen.routeName),
               ),
               ListTile(
-                leading: const Icon(Icons.straighten, color: lime),
+                leading: const Icon(Icons.straighten, color: _lime),
                 title: const Text('Medidas corporais'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.push(context, MaterialPageRoute<void>(
                   builder: (_) => const MeasurementCategoriesScreen())),
               ),
               ListTile(
-                leading: const Icon(Icons.restaurant, color: lime),
+                leading: const Icon(Icons.restaurant, color: _lime),
                 title: const Text('Dieta e planos'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.push(context, MaterialPageRoute<void>(
                   builder: (_) => const MeuFitTacoFoodSearchScreen())),
               ),
               ListTile(
-                leading: const Icon(Icons.settings, color: lime),
+                leading: const Icon(Icons.settings, color: _lime),
                 title: const Text('Configurações'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.push(context, MaterialPageRoute<void>(
                   builder: (_) => const SettingsPage())),
-              ),
-              const Padding(
-                padding: EdgeInsets.all(12),
-                child: Text('Foto editável: recurso em desenvolvimento.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70)),
               ),
             ],
           );
