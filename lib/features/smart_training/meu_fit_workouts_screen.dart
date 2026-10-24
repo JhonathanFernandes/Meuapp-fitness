@@ -224,7 +224,7 @@ class _WorkoutWeekdayCard extends StatelessWidget {
     final recovery = count == 0;
     final focus = recovery
         ? 'Recuperação e descanso'
-        : workout.title.replaceFirst(RegExp(r'^Dia \\d+ · '), '');
+        : workout.title.replaceFirst(RegExp(r'^Dia \d+ · '), '');
     final previews = workout.exercises.take(3).toList();
 
     return Container(
