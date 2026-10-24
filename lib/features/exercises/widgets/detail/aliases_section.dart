@@ -26,19 +26,26 @@ class AliasesSection extends StatelessWidget {
 
   const AliasesSection({super.key, required this.translation});
 
+  bool _looksLikeEnglish(String value) {
+    return RegExp(
+      r'\\b(with|and|for|from|the|to|your|alternate|added|stability|muscles|rectus|obliques|plank|bird dog|leg curl|hip thrust|incline|decline|standing|seated|lying|dumbbell|barbell|cable|machine|push up|pull down|deadlift|squat|crunch|row|press|raise|curl|extension)\\b',
+      caseSensitive: false,
+    ).hasMatch(value);
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (translation.aliases.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final aliases = translation.aliases
+        .map((item) => item.alias.trim())
+        .where((alias) => alias.isNotEmpty && !_looksLikeEnglish(alias))
+        .toList(growable: false);
+    if (aliases.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         MutedText(
-          AppLocalizations.of(context).alsoKnownAs(
-            translation.aliases.map((e) => e.alias).toList().join(', '),
-          ),
+          AppLocalizations.of(context).alsoKnownAs(aliases.join(', ')),
         ),
         const SizedBox(height: 9),
       ],
