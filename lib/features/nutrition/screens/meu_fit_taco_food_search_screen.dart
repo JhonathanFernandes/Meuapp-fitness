@@ -285,6 +285,7 @@ class _MeuFitTacoFoodSearchScreenState
     final food = match;
     final matched = food != null && bestScore > 0;
     final portion = RegExp(r'(\d+(?:[.,]\d+)?)\s*g\b', caseSensitive: false).firstMatch(itemText);
+    final portionGramsKnown = portion != null;
     final grams = portion == null ? 100.0 : (double.tryParse(portion.group(1)!.replaceAll(',', '.')) ?? 100);
     final kcal = food?['energy_kcal'];
     final protein = food?['protein_g'];
@@ -299,7 +300,7 @@ class _MeuFitTacoFoodSearchScreenState
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         title: Text(itemText, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(matched
-            ? 'Correspondência provável: ${food!['description']}\nPorção calculada: ${grams.toStringAsFixed(0)} g · ${scaled(kcal)} kcal · P ${scaled(protein)} g · C ${scaled(carbs)} g · G ${scaled(fat)} g'
+            ? 'Correspondência provável: ${food!['description']}\n${portionGramsKnown ? 'Porção calculada: ${grams.toStringAsFixed(0)} g' : 'Valores de referência por 100 g; peso da unidade não identificado'} · ${scaled(kcal)} kcal · P ${scaled(protein)} g · C ${scaled(carbs)} g · G ${scaled(fat)} g'
             : 'Não foi possível associar automaticamente a um alimento da TACO. Pesquise pelo nome no catálogo para consultar a tabela nutricional.',
           style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.45)),
         isThreeLine: true,
