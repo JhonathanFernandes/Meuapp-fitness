@@ -100,9 +100,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               FutureBuilder<String?>(
                 future: _displayNameFuture,
                 builder: (context, nameSnapshot) {
-                  final name = nameSnapshot.data?.trim();
+                  final rawName = nameSnapshot.data?.trim();
+                  final name = rawName != null &&
+                          rawName.isNotEmpty &&
+                          rawName.toLowerCase() != 'user' &&
+                          rawName.toLowerCase() != 'username'
+                      ? rawName
+                      : null;
                   return Text(
-                    name != null && name.isNotEmpty ? 'Olá, $name 👋' : 'Olá! 👋',
+                    name != null ? 'Olá, $name 👋' : 'Olá! 👋',
                     style: const TextStyle(fontSize: 29, height: 1.1, fontWeight: FontWeight.w900, letterSpacing: -0.8),
                   );
                 },
