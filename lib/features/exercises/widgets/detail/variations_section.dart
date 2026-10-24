@@ -32,10 +32,11 @@ class VariationsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final exerciseState =
         ref.watch(exercisesProvider).value ?? ExerciseState(const []);
-    final variations = exercise.variationGroup == null
+    final variationGroup = exercise.variationGroup;
+    final variations = variationGroup == null
         ? const <Exercise>[]
         : exerciseState.findByVariationGroup(
-            exercise.variationGroup,
+            variationGroup,
             exerciseIdToExclude: exercise.id,
           );
 
