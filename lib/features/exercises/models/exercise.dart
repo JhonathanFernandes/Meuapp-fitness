@@ -462,11 +462,14 @@ class Exercise extends Equatable {
     final languageCode = language.replaceAll('_', '-').split('-')[0].toLowerCase();
 
     if (translations.isEmpty) {
-      _logger.info('Exercise-ID $id has no translations, returning an empty placeholder.');
-      return Translation(
-        name: '',
-        description: '',
-        language: Language(id: -1, shortName: languageCode, fullName: ''),
+      _logger.info('Exercise-ID $id has no translations, returning a Portuguese-safe placeholder.');
+      return _localizeFallback(
+        Translation(
+          name: '',
+          description: '',
+          language: Language(id: -1, shortName: languageCode, fullName: ''),
+        ),
+        languageCode,
       );
     }
 
