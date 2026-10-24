@@ -13,6 +13,50 @@ String getServerStringTranslation(String value, BuildContext context) {
   final logger = Logger('getServerStringTranslation');
   final i18n = AppLocalizations.of(context);
 
+  if (Localizations.localeOf(context).languageCode == 'pt') {
+    const portugueseTerms = <String, String>{
+      'Abdominals': 'Abdômen',
+      'Abdominal': 'Abdômen',
+      'Core': 'Região central do corpo',
+      'Lower Body': 'Parte inferior do corpo',
+      'Upper Body': 'Parte superior do corpo',
+      'Olympic Weightlifting': 'Levantamento de peso olímpico',
+      'Powerlifting': 'Levantamento de força',
+      'Strength': 'Força',
+      'Stretching': 'Alongamento',
+      'Plyometrics': 'Pliometria',
+      'Strongman': 'Força e condicionamento',
+      'Functional Training': 'Treinamento funcional',
+      'Bodyweight': 'Peso corporal',
+      'Body Weight': 'Peso corporal',
+      'Cable': 'Polia',
+      'Cables': 'Polias',
+      'Machine': 'Máquina',
+      'Leverage Machine': 'Máquina com alavanca',
+      'Smith Machine': 'Máquina Smith',
+      'EZ-Bar': 'Barra W',
+      'E-Z Bar': 'Barra W',
+      'Trap Bar': 'Barra hexagonal',
+      'Resistance Band': 'Faixa elástica',
+      'Resistance Bands': 'Faixas elásticas',
+      'Exercise Ball': 'Bola de exercício',
+      'Stability Ball': 'Bola de estabilidade',
+      'Medicine Ball': 'Bola medicinal',
+      'Foam Roller': 'Rolo de liberação miofascial',
+      'Bench Press': 'Banco para supino',
+      'Flat Bench': 'Banco reto',
+      'Incline Bench': 'Banco inclinado',
+      'Decline Bench': 'Banco declinado',
+      'Dip Bar': 'Barras paralelas',
+      'Pull-up Bar': 'Barra fixa',
+      'Parallel Bars': 'Barras paralelas',
+      'None': 'Sem equipamento',
+      'none (bodyweight exercise)': 'Sem equipamento (peso corporal)',
+    };
+    final translated = portugueseTerms[value] ?? portugueseTerms[value.trim()];
+    if (translated != null) return translated;
+  }
+
   switch (value) {
     case 'Abs':
       return i18n.abs;
