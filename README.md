@@ -1,4 +1,4 @@
-# Meu App Fitness 
+# Meu App Fitness - App Treino
 
 Aplicativo de acompanhamento de treinos, exercícios, alimentação, medidas corporais e peso, baseado no projeto de código aberto [wger](https://github.com/wger-project/flutter).
 
