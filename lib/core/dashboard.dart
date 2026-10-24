@@ -48,8 +48,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     _profileFuture = MeuFitOnboardingStorage().load();
   }
 
-  Widget _getDashboardWidget(DashboardWidget widget) {
-    switch (widget) {
+  Widget build(BuildContext context) {
+     switch (widget) {
       case DashboardWidget.routines:
         return const DashboardRoutineWidget();
       case DashboardWidget.weight:
