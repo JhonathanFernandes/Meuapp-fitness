@@ -156,13 +156,13 @@ class _MeuFitTacoFoodSearchScreenState
   String _foodSearchKey(String value) => value
       .toLowerCase()
       .replaceAll(RegExp(r'[^a-z0-9áàâãéêíóôõúç ]'), ' ')
-      .replaceAll(RegExp(r'\\s+'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 
   Future<void> _openMealDetails(String day, List<String> meal) async {
     final description = meal[2];
     final parts = description
-        .split(RegExp(r',|\\s+e\\s+', caseSensitive: false))
+        .split(RegExp(r',|\s+e\s+', caseSensitive: false))
         .map((part) => part.trim())
         .where((part) => part.isNotEmpty)
         .toList();
@@ -246,7 +246,7 @@ class _MeuFitTacoFoodSearchScreenState
   }
 
   Widget _buildMealFoodRow(String itemText, BuildContext dialogContext) {
-    final query = _foodSearchKey(itemText.replaceAll(RegExp(r'\\d+(?:[.,]\\d+)?\\s*(?:g|ml|unidade|unidades|ovo|ovos)?', caseSensitive: false), ' '));
+    final query = _foodSearchKey(itemText.replaceAll(RegExp(r'\d+(?:[.,]\d+)?\s*(?:g|ml|unidade|unidades|ovo|ovos)?', caseSensitive: false), ' '));
     Map<String, dynamic>? match;
     int bestScore = 0;
     for (final food in _foods) {
@@ -261,7 +261,7 @@ class _MeuFitTacoFoodSearchScreenState
     }
     final food = match;
     final matched = food != null && bestScore > 0;
-    final portion = RegExp(r'(\\d+(?:[.,]\\d+)?)\\s*g\\b', caseSensitive: false).firstMatch(itemText);
+    final portion = RegExp(r'(\d+(?:[.,]\d+)?)\s*g\b', caseSensitive: false).firstMatch(itemText);
     final grams = portion == null ? 100.0 : (double.tryParse(portion.group(1)!.replaceAll(',', '.')) ?? 100);
     final kcal = food?['energy_kcal'];
     final protein = food?['protein_g'];
@@ -276,7 +276,7 @@ class _MeuFitTacoFoodSearchScreenState
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         title: Text(itemText, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(matched
-            ? 'Correspondência provável: ${food!['description']}\\nPorção calculada: ${grams.toStringAsFixed(0)} g · ${scaled(kcal)} kcal · P ${scaled(protein)} g · C ${scaled(carbs)} g · G ${scaled(fat)} g'
+            ? 'Correspondência provável: ${food!['description']}\nPorção calculada: ${grams.toStringAsFixed(0)} g · ${scaled(kcal)} kcal · P ${scaled(protein)} g · C ${scaled(carbs)} g · G ${scaled(fat)} g'
             : 'Não foi possível associar automaticamente a um alimento da TACO. Pesquise pelo nome no catálogo para consultar a tabela nutricional.',
           style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.45)),
         isThreeLine: true,
