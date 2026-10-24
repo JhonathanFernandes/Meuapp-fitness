@@ -478,9 +478,16 @@ class _MeuFitTacoFoodSearchScreenState
       'flexibilidade' => 'Use uma alimentação variada e suficiente para sustentar atividade e recuperação; a meta não é automaticamente emagrecer nem ganhar massa.',
       _ => 'Use variedade alimentar e ajuste as porções às necessidades individuais.',
     };
-    final bmiText = profile.age < 20
-        ? 'IMC calculado: ${bmi.toStringAsFixed(1).replaceAll('.', ',')} (para menores de 20 anos, a interpretação exige curva por idade e sexo).'
-        : 'IMC calculado: ${bmi.toStringAsFixed(1).replaceAll('.', ',')} (indicador de triagem; não define sozinho a dieta nem a composição corporal).';
+    final bmiCategory = profile.age < 20
+        ? 'A classificação do IMC para este perfil exige curva por idade e sexo.'
+        : bmi < 18.5
+            ? 'Faixa de IMC adulto: abaixo da faixa de referência.'
+            : bmi < 25
+                ? 'Faixa de IMC adulto: referência usual.'
+                : bmi < 30
+                    ? 'Faixa de IMC adulto: acima da referência usual.'
+                    : 'Faixa de IMC adulto: faixa elevada; procure avaliação profissional para interpretar o resultado.';
+    final bmiText = 'IMC calculado: ${bmi.toStringAsFixed(1).replaceAll('.', ',')}. $bmiCategory (indicador de triagem, não define sozinho a dieta nem a composição corporal).';
     return Card(
       color: const Color(0xFF202020),
       child: Padding(
