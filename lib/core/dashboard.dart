@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 import 'package:wger/features/smart_training/starter_workout_planner.dart';
 import 'package:wger/features/smart_training/meu_fit_workouts_screen.dart';
@@ -92,7 +93,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               const Text('BORA EVOLUIR?', style: TextStyle(color: _lime, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 2)),
               const SizedBox(height: 5),
-              const Text('Olá, atleta 👋', style: TextStyle(fontSize: 29, height: 1.1, fontWeight: FontWeight.w900, letterSpacing: -0.8)),
+              FutureBuilder<String?>(
+                future: SharedPreferences.getInstance().then((prefs) => prefs.getString('meu_fit_display_name_v1')),
+                builder: (context, nameSnapshot) {
+                  final name = nameSnapshot.data?.trim();
+                  return Text(
+                    name != null && name.isNotEmpty ? 'Olá, $name 👋' : 'Olá! 👋',
+                    style: const TextStyle(fontSize: 29, height: 1.1, fontWeight: FontWeight.w900, letterSpacing: -0.8),
+                  );
+                },
+              ),
               const SizedBox(height: 7),
               const Text('Seu próximo nível começa hoje.', style: TextStyle(color: Color(0xFF999999), fontSize: 14)),
               const SizedBox(height: 22),
