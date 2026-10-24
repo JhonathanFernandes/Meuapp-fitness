@@ -293,6 +293,8 @@ class _MeuFitTacoFoodSearchScreenState
     final protein = food?['protein_g'];
     final carbs = food?['carbohydrate_g'];
     final fat = food?['lipids_g'];
+    final fiber = food?['dietary_fiber_g'];
+    final sodium = food?['sodium_mg'];
     String scaled(dynamic value) => value is num
         ? (value * grams / 100).toStringAsFixed(1).replaceAll('.', ',')
         : '—';
@@ -302,7 +304,7 @@ class _MeuFitTacoFoodSearchScreenState
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         title: Text(itemText, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(matched
-            ? 'Correspondência provável: ${food!['description']}\n${portionGramsKnown ? 'Porção calculada: ${grams.toStringAsFixed(0)} g' : 'Valores de referência por 100 g; peso da unidade não identificado'} · ${scaled(kcal)} kcal · P ${scaled(protein)} g · C ${scaled(carbs)} g · G ${scaled(fat)} g'
+            ? 'Correspondência provável: ${food!['description']}\n${portionGramsKnown ? 'Porção calculada: ${grams.toStringAsFixed(0)} g' : 'Valores de referência por 100 g; peso da unidade não identificado'} · ${scaled(kcal)} kcal · P ${scaled(protein)} g · C ${scaled(carbs)} g · G ${scaled(fat)} g · fibras ${scaled(fiber)} g · sódio ${scaled(sodium)} mg'
             : 'Não foi possível associar automaticamente a um alimento da TACO. Pesquise pelo nome no catálogo para consultar a tabela nutricional.',
           style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.45)),
         isThreeLine: true,
