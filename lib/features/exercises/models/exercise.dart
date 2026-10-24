@@ -419,6 +419,23 @@ class Exercise extends Equatable {
         .hasMatch(text);
   }
 
+  String _translateExerciseNameByTerms(String originalName) {
+    if (originalName.trim().isEmpty) return 'Exercício $id';
+    var translated = originalName.toLowerCase();
+    final entries = _portugueseMovementWords.entries.toList()
+      ..sort((a, b) => b.key.length.compareTo(a.key.length));
+    for (final entry in entries) {
+      translated = translated.replaceAll(
+        RegExp('\\\\b' + RegExp.escape(entry.key) + r'\\b', caseSensitive: false),
+        entry.value,
+      );
+    }
+    if (translated == originalName.toLowerCase() || _looksLikeEnglish(translated)) {
+      return 'Exercício $id';
+    }
+    return translated[0].toUpperCase() + translated.substring(1);
+  }
+
   Translation _localizeFallback(Translation original, String languageCode) {
     if (languageCode != 'pt') return original;
 
@@ -430,7 +447,7 @@ class Exercise extends Equatable {
     final localizedDescription = _brazilianExerciseDescriptions[key];
     final shouldReplaceDescription = _looksLikeEnglish(sourceDescription);
     final description = localizedDescription ??
-        (shouldReplaceDescription
+        (sourceDescription.isEmpty || shouldReplaceDescription
             ? '<p>Execute o movimento de forma controlada, mantenha a postura alinhada e use uma amplitude confortável. Consulte a demonstração visual quando disponível e interrompa se sentir dor.</p>'
             : original.description);
 
@@ -441,7 +458,7 @@ class Exercise extends Equatable {
         (original.language.shortName.toLowerCase().startsWith('pt') &&
                 !_looksLikeEnglish(originalName)
             ? originalName
-            : (originalName.isEmpty ? 'Exercício $id' : 'Exercício $id'));
+            : _translateExerciseNameByTerms(originalName));
 
     return Translation(
       id: original.id,
