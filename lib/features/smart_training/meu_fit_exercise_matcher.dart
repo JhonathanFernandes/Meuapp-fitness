@@ -21,7 +21,7 @@ class MeuFitExerciseMatcher {
     'Mesa flexora': ['mesa flexora', 'lying leg curl', 'leg curl'],
     'Leg press': ['leg press'],
     'Prancha': ['prancha', 'plank'],
-    'Bird dog': ['bird dog'],
+    'Extensão alternada de braço e perna': ['bird dog', 'bird-dog', 'extensão alternada de braço e perna'],
     'Flexão inclinada': ['flexão inclinada', 'incline push up', 'incline push-up'],
     'Remada com elástico': ['remada com elástico', 'resistance band row'],
     'Desenvolvimento com elástico': ['desenvolvimento com elástico', 'band shoulder press'],
