@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:video_player/video_player.dart';
 import 'package:wger/features/exercises/screens/exercise_screen.dart';
 import 'package:wger/features/exercises/providers/exercises_notifier.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
@@ -501,26 +501,9 @@ class MeuFitExerciseFallbackScreen extends StatelessWidget {
     return 'consulte a demonstração e confirme a musculatura com um profissional';
   }
 
-  Future<void> _openSearch(BuildContext context, Uri uri) async {
-    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!opened && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível abrir o navegador neste aparelho.')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     const lime = Color(0xFFC9F31D);
-    final videoUri = Uri.https('www.youtube.com', '/results', {
-      'search_query': '$exerciseName execução correta exercício tutorial',
-    });
-    final imageUri = Uri.https('www.google.com', '/search', {
-      'tbm': 'isch',
-      'q': 'anatomia músculos $_muscleGroup exercício $exerciseName',
-    });
-
     return Theme(
       data: ThemeData.dark(useMaterial3: true).copyWith(
         scaffoldBackgroundColor: const Color(0xFF101010),
@@ -549,26 +532,148 @@ class MeuFitExerciseFallbackScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(_muscleGroup, style: const TextStyle(fontSize: 17, height: 1.45)),
             const SizedBox(height: 8),
-            const Text(
-              'O catálogo ainda não possui uma ficha completa para este exercício. Use as pesquisas abaixo para ver imagens anatômicas e uma demonstração; confirme a técnica e os músculos-alvo com um profissional.',
-              style: TextStyle(color: Colors.white60, height: 1.5),
+            Text(
+              _descriptionForExercise(exerciseName),
+              style: const TextStyle(color: Colors.white70, height: 1.5),
             ),
             const SizedBox(height: 18),
-            OutlinedButton.icon(
-              onPressed: () => _openSearch(context, imageUri),
-              icon: const Icon(Icons.image_search_outlined),
-              label: const Text('Ver imagens dos músculos na internet'),
-              style: OutlinedButton.styleFrom(foregroundColor: lime, side: const BorderSide(color: lime), padding: const EdgeInsets.all(15)),
+            const Text(
+              'DEMONSTRAÇÃO DO EXERCÍCIO',
+              style: TextStyle(color: lime, fontWeight: FontWeight.w900, letterSpacing: 0.5),
             ),
             const SizedBox(height: 10),
-            FilledButton.icon(
-              onPressed: () => _openSearch(context, videoUri),
-              icon: const Icon(Icons.play_circle_outline),
-              label: const Text('Ver vídeo da execução'),
-              style: FilledButton.styleFrom(backgroundColor: lime, foregroundColor: Colors.black, padding: const EdgeInsets.all(15)),
+            _InlineExerciseDemoVideo(exerciseName: exerciseName),
+            const SizedBox(height: 12),
+            const Text(
+              'Os vídeos são exemplos visuais. Comece com carga leve, faça os movimentos com controle e peça orientação profissional se tiver dúvidas.',
+              style: TextStyle(color: Colors.white54, height: 1.5, fontSize: 12),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+
+String _descriptionForExercise(String name) {
+  final key = name.toLowerCase();
+  if (key.contains('flexão')) return 'Apoie as mãos em uma superfície firme, mantenha o corpo alinhado e flexione os cotovelos devagar. Empurre a superfície para voltar à posição inicial. Use uma superfície mais alta para facilitar.';
+  if (key.contains('supino')) return 'Mantenha as costas apoiadas, os pés firmes e os punhos alinhados. Empurre as alças para a frente sem travar os cotovelos e retorne lentamente.';
+  if (key.contains('remada')) return 'Mantenha o tronco estável e os ombros afastados das orelhas. Puxe as mãos em direção ao corpo, aproximando as escápulas, e volte devagar sem balançar.';
+  if (key.contains('desenvolvimento')) return 'Comece com as mãos na altura dos ombros. Empurre para cima de forma controlada, sem arquear a lombar, e retorne lentamente.';
+  if (key.contains('pélvica') || key.contains('ponte de glúteos')) return 'Deite-se de costas, flexione os joelhos e mantenha os pés apoiados. Eleve o quadril contraindo os glúteos, sem exagerar na curvatura lombar, e desça devagar.';
+  if (key.contains('flexora')) return 'Ajuste o equipamento para que o eixo fique alinhado ao joelho. Flexione os joelhos controlando a carga e retorne sem deixar o peso despencar.';
+  if (key.contains('leg press')) return 'Mantenha as costas apoiadas e os pés firmes na plataforma. Flexione os joelhos até uma amplitude confortável e empurre sem travá-los.';
+  if (key.contains('agachamento')) return 'Afaste os pés aproximadamente na largura dos ombros. Leve o quadril para trás, flexione os joelhos mantendo os pés apoiados e suba com controle.';
+  if (key.contains('prancha')) return 'Apoie os antebraços e as pontas dos pés, mantenha o corpo alinhado e contraia o abdômen. Respire normalmente e encerre se perder a postura.';
+  if (key.contains('bird dog')) return 'Na posição de quatro apoios, estenda lentamente um braço e a perna oposta. Evite girar o quadril, retorne e alterne os lados.';
+  if (key.contains('terra')) return 'Mantenha a carga próxima ao corpo, dobre o quadril e preserve a coluna em posição neutra. Empurre o chão para subir e retorne levando o quadril para trás.';
+  if (key.contains('mobilidade')) return 'Faça movimentos lentos e confortáveis, sem forçar a articulação. Respire de forma contínua e interrompa se sentir dor.';
+  if (key.contains('alongamento')) return 'Entre na posição gradualmente até sentir uma tensão leve, sem dor. Mantenha a respiração regular e não faça balanços bruscos.';
+  return 'Execute o movimento lentamente, mantenha uma postura estável e use uma amplitude confortável. Interrompa se sentir dor.';
+}
+
+class _InlineExerciseDemoVideo extends StatefulWidget {
+  const _InlineExerciseDemoVideo({required this.exerciseName});
+
+  final String exerciseName;
+
+  @override
+  State<_InlineExerciseDemoVideo> createState() => _InlineExerciseDemoVideoState();
+}
+
+class _InlineExerciseDemoVideoState extends State<_InlineExerciseDemoVideo> {
+  VideoPlayerController? _controller;
+  bool _failed = false;
+
+  static const _videoBase = 'https://pub-585d42eb1aa64a67aedf483ec328d3fe.r2.dev/exercise-videos/male/';
+  static const _videoByName = <String, String>{
+    'flexão inclinada': 'push-ups.mp4',
+    'supino na máquina': 'barbell-bench-press.mp4',
+    'desenvolvimento na máquina': 'dumbbell-lateral-raise.mp4',
+    'agachamento até uma cadeira': 'bodyweight-squat.mp4',
+    'ponte de glúteos': 'glute-bridge.mp4',
+    'elevação pélvica': 'hip-thrust.mp4',
+    'mesa flexora': 'lying-leg-curl.mp4',
+    'leg press': 'leg-press.mp4',
+    'prancha': 'plank.mp4',
+    'bird dog': 'bird-dog.mp4',
+    'remada sentada': 'seated-cable-row.mp4',
+    'remada com elástico': 'seated-cable-row.mp4',
+    'desenvolvimento com elástico': 'shoulder-press.mp4',
+    'levantamento terra com mochila': 'deadlift.mp4',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    final filename = _videoByName[widget.exerciseName.toLowerCase()];
+    if (filename == null) {
+      _failed = true;
+      return;
+    }
+    _controller = VideoPlayerController.networkUrl(Uri.parse('$_videoBase$filename'));
+    _controller!.initialize().then((_) {
+      if (mounted) setState(() {});
+    }).catchError((Object _) {
+      if (mounted) setState(() => _failed = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const lime = Color(0xFFC9F31D);
+    final controller = _controller;
+    if (_failed || controller == null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: const Color(0xFF202020), borderRadius: BorderRadius.circular(14)),
+        child: const Text(
+          'Não foi possível carregar um vídeo para este exercício agora. Confira sua conexão e tente novamente mais tarde.',
+          style: TextStyle(color: Colors.white70, height: 1.4),
+        ),
+      );
+    }
+    if (!controller.value.isInitialized) {
+      return const SizedBox(
+        height: 190,
+        child: Center(child: CircularProgressIndicator(color: lime)),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Column(
+        children: [
+          AspectRatio(
+            aspectRatio: controller.value.aspectRatio,
+            child: VideoPlayer(controller),
+          ),
+          Container(
+            color: const Color(0xFF202020),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () => setState(() {
+                    controller.value.isPlaying ? controller.pause() : controller.play();
+                  }),
+                  icon: Icon(controller.value.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, color: lime),
+                  tooltip: controller.value.isPlaying ? 'Pausar vídeo' : 'Reproduzir vídeo',
+                ),
+                Expanded(
+                  child: VideoProgressIndicator(controller, allowScrubbing: true, padding: const EdgeInsets.symmetric(vertical: 12)),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
