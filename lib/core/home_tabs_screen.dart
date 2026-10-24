@@ -24,7 +24,7 @@ import 'package:wger/core/material.dart';
 import 'package:wger/features/account/providers/timezone_sync.dart';
 import 'package:wger/features/health/providers/health_sync.dart';
 import 'package:wger/features/measurements/screens/measurement_categories_screen.dart';
-import 'package:wger/features/nutrition/screens/nutritional_plans_screen.dart';
+import 'package:wger/features/nutrition/screens/meu_fit_taco_food_search_screen.dart';
 import 'package:wger/features/smart_training/meu_fit_workouts_screen.dart';
 import 'package:wger/l10n/generated/app_localizations.dart';
 import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
@@ -85,7 +85,7 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
   final _screenList = [
     const DashboardScreen(),
     const MeuFitWorkoutsScreen(),
-    const NutritionalPlansScreen(),
+    const MeuFitTacoFoodSearchScreen(),
     const MeasurementCategoriesScreen(),
     const _MeuFitProfileScreen(),
   ];
@@ -103,7 +103,7 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
       ),
       NavigationDestination(
         icon: const Icon(Icons.restaurant),
-        label: 'Nutrição',
+        label: 'Dieta',
       ),
       NavigationDestination(
         icon: const Icon(Icons.area_chart),
@@ -227,10 +227,10 @@ class _MeuFitProfileScreen extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.restaurant, color: lime),
-                title: const Text('Alimentação e planos'),
+                title: const Text('Dieta e planos'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.push(context, MaterialPageRoute<void>(
-                  builder: (_) => const NutritionalPlansScreen())),
+                  builder: (_) => const MeuFitTacoFoodSearchScreen())),
               ),
               ListTile(
                 leading: const Icon(Icons.settings, color: lime),
