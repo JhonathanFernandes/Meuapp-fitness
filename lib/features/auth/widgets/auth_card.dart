@@ -378,7 +378,7 @@ class _AuthCardState extends ConsumerState<AuthCard> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor: const Color(0xFFC9F31D),
                       ),
                       child: _isLoading
                           ? const CircularProgressIndicator(
@@ -389,8 +389,8 @@ class _AuthCardState extends ConsumerState<AuthCard> {
                                   ? i18n.register
                                   : (_useUsernameAndPassword ? i18n.login : i18n.signInWithToken),
                               style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                     ),
