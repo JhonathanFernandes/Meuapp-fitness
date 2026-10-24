@@ -42,7 +42,7 @@ Para testes, o projeto original documenta o servidor de desenvolvimento `https:/
 
 ## Idiomas
 
-Os arquivos de tradução ficam em `lib/l10n/`. O projeto inclui `app_pt.arb`, `app_pt_BR.arb` e `app_en.arb`. O catálogo `app_pt_BR.arb` cobre as 559 mensagens do arquivo inglês. Os identificadores e comandos técnicos do Flutter continuam em inglês para preservar a compatibilidade.
+Os arquivos de tradução ficam em `lib/l10n/`. O projeto inclui `app_pt.arb`, `app_pt_BR.arb` e `app_en.arb`. O catálogo `app_pt_BR.arb` cobre as 560 mensagens do arquivo inglês. Os identificadores e comandos técnicos do Flutter continuam em inglês para preservar a compatibilidade.
 
 ## Desenvolvimento e contribuições
 
@@ -53,4 +53,17 @@ O projeto original aceita contribuições de código, traduções e documentaç�
 Este aplicativo deriva do **wger Workout Manager**, desenvolvido pela equipe wger e seus colaboradores. O código original é disponibilizado sob a **GNU Affero General Public License, versão 3 ou posterior (AGPL-3.0-or-later)**, com exceção específica para lojas de aplicativos. Os avisos de direitos autorais e a licença original devem ser preservados. Dados de exercícios e ingredientes podem estar sujeitos a licenças Creative Commons próprias. Consulte os arquivos de licença do repositório e as informações de cada conjunto de dados.
 
 Desenvolvido por JHOWDEV
+
+### Mídia dos exercícios
+
+As ilustrações da pasta `assets/exercises/repdb/` são do conjunto gratuito da
+[RepDB](https://repdb.co), com uso no aplicativo condicionado à atribuição. Os
+créditos aparecem na tela Sobre; a licença acompanha os arquivos em
+`assets/exercises/repdb/LICENSE.md`.
+
+Os vídeos em `assets/exercises/videos/ymove/` são demonstrações gratuitas da
+[Your Move](https://ymove.app/free-exercise-videos). A licença permite uso
+comercial dentro do app e não permite redistribuir os arquivos como uma
+biblioteca separada. As fontes e os termos ficam em
+`assets/exercises/videos/ymove/SOURCE.md`.
 
