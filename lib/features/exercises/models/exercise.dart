@@ -209,6 +209,26 @@ class Exercise extends Equatable {
     'side plank': 'Prancha lateral',
   };
 
+  // Instruções curtas em português para os exercícios usados pelo plano Meu Fit.
+  // São exibidas quando o catálogo não possui descrição traduzida para pt.
+  static const Map<String, String> _brazilianExerciseDescriptions = {
+    'chest press': '<p>Mantenha as costas apoiadas e os pés firmes. Empurre as alças para a frente de forma controlada, sem travar os cotovelos, e retorne lentamente.</p>',
+    'seated cable row': '<p>Mantenha o tronco estável e os ombros afastados das orelhas. Puxe a alça em direção ao abdômen, aproxime as escápulas e volte devagar sem balançar o corpo.</p>',
+    'cable row': '<p>Mantenha o tronco estável. Puxe a alça em direção ao corpo, aproximando as escápulas, e retorne lentamente sem usar impulso.</p>',
+    'shoulder press': '<p>Comece com as mãos na altura dos ombros. Empurre para cima sem arquear a lombar e retorne devagar, sem travar os cotovelos.</p>',
+    'hip thrust': '<p>Apoie as costas em um banco e mantenha os pés firmes. Eleve o quadril contraindo os glúteos, sem exagerar na curvatura lombar, e desça com controle.</p>',
+    'lying leg curl': '<p>Ajuste o equipamento para que o eixo fique alinhado ao joelho. Flexione os joelhos controlando a carga e retorne sem deixar o peso despencar.</p>',
+    'leg press': '<p>Mantenha as costas apoiadas e os pés firmes na plataforma. Flexione os joelhos até uma amplitude confortável e empurre sem travá-los.</p>',
+    'plank': '<p>Apoie os antebraços e as pontas dos pés, mantenha o corpo alinhado e contraia o abdômen. Respire normalmente e encerre se perder a postura.</p>',
+    'incline push up': '<p>Apoie as mãos em uma superfície firme e elevada, mantenha o corpo alinhado e flexione os cotovelos devagar. Empurre a superfície para voltar à posição inicial.</p>',
+    'incline push-up': '<p>Apoie as mãos em uma superfície firme e elevada, mantenha o corpo alinhado e flexione os cotovelos devagar. Empurre a superfície para voltar à posição inicial.</p>',
+    'glute bridge': '<p>Deite-se de costas, flexione os joelhos e mantenha os pés apoiados. Eleve o quadril contraindo os glúteos e desça lentamente.</p>',
+    'deadlift': '<p>Mantenha a carga próxima ao corpo, leve o quadril para trás e preserve a coluna em posição neutra. Suba com controle e retorne levando o quadril para trás.</p>',
+    'backpack deadlift': '<p>Segure a mochila próxima ao corpo, leve o quadril para trás e mantenha a coluna neutra. Suba com controle e retorne devagar.</p>',
+    'bodyweight squat': '<p>Afaste os pés aproximadamente na largura dos ombros. Leve o quadril para trás, flexione os joelhos mantendo os pés apoiados e suba com controle.</p>',
+    'bird dog': '<p>Na posição de quatro apoios, estenda lentamente um braço e a perna oposta. Evite girar o quadril, retorne e alterne os lados.</p>',
+  };
+
   Translation _localizeFallback(Translation original, String languageCode) {
     if (languageCode != 'pt' || original.language.shortName.toLowerCase().startsWith('pt')) {
       return original;
@@ -221,7 +241,7 @@ class Exercise extends Equatable {
       created: original.created,
       exerciseId: original.exerciseId,
       name: localizedName,
-      description: original.description,
+      description: _brazilianExerciseDescriptions[original.name.trim().toLowerCase()] ?? original.description,
       descriptionSource: original.descriptionSource,
       language: original.language,
       notes: original.notes,
