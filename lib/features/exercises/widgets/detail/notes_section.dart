@@ -25,11 +25,19 @@ class NotesSection extends StatelessWidget {
 
   const NotesSection({super.key, required this.translation});
 
+  bool _looksLikeEnglish(String value) {
+    return RegExp(
+      r'\\b(with|and|for|from|the|to|your|keep|hold|slowly|start|return|alternate|added|stability|muscles|rectus|obliques|plank|bird dog|leg curl|hip thrust|incline|decline|standing|seated|lying|dumbbell|barbell|cable|machine|push up|pull down|deadlift|squat|crunch|row|press|raise|curl|extension)\\b',
+      caseSensitive: false,
+    ).hasMatch(value);
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (translation.notes.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final notes = translation.notes
+        .map((note) => note.comment.trim())
+        .where((comment) => comment.isNotEmpty && !_looksLikeEnglish(comment))
+        .toList(growable: false);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +46,10 @@ class NotesSection extends StatelessWidget {
           AppLocalizations.of(context).notes,
           style: Theme.of(context).textTheme.headlineSmall,
         ),
-        ...translation.notes.map((e) => Text(e.comment)),
+        if (notes.isEmpty)
+          const Text('Não há observações adicionais em português para este exercício.')
+        else
+          ...notes.map(Text.new),
         const SizedBox(height: 9),
       ],
     );
