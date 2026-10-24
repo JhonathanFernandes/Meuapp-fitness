@@ -30,15 +30,14 @@ class VariationsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (exercise.variationGroup == null) {
-      return const SizedBox.shrink();
-    }
-
-    final exerciseState = ref.watch(exercisesProvider).value ?? ExerciseState(const []);
-    final variations = exerciseState.findByVariationGroup(
-      exercise.variationGroup,
-      exerciseIdToExclude: exercise.id,
-    );
+    final exerciseState =
+        ref.watch(exercisesProvider).value ?? ExerciseState(const []);
+    final variations = exercise.variationGroup == null
+        ? const <Exercise>[]
+        : exerciseState.findByVariationGroup(
+            exercise.variationGroup,
+            exerciseIdToExclude: exercise.id,
+          );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,9 +47,9 @@ class VariationsSection extends ConsumerWidget {
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         if (variations.isEmpty)
-          const Text('-/-')
+          const Text('Nenhuma variação cadastrada para este exercício.')
         else
-          ...variations.map((e) => ExerciseListTile(exercise: e)),
+          ...variations.map((variation) => ExerciseListTile(exercise: variation)),
         const SizedBox(height: 9),
       ],
     );
