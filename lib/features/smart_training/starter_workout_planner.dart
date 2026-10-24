@@ -89,7 +89,7 @@ class StarterWorkoutPlanner {
     ];
     final core = [
       exercise('Prancha', '20–30 segundos'),
-      exercise('Bird dog', '8–10 por lado'),
+      exercise('Extensão alternada de braço e perna', '8–10 por lado'),
     ];
     final full = [...upper.take(2), ...lower.take(2), ...core.take(1)];
     final split = profile.daysPerWeek <= 3
