@@ -97,25 +97,32 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Keep icons visible on both states: white on the dark bar and black
+    // when the lime selected indicator is shown.
     final destinations = [
       NavigationDestination(
-        icon: const Icon(Icons.home),
+        icon: const Icon(Icons.home, color: Colors.white),
+        selectedIcon: const Icon(Icons.home, color: Colors.black),
         label: 'Início',
       ),
       NavigationDestination(
-        icon: const Icon(Icons.fitness_center),
+        icon: const Icon(Icons.fitness_center, color: Colors.white),
+        selectedIcon: const Icon(Icons.fitness_center, color: Colors.black),
         label: 'Treinos',
       ),
       NavigationDestination(
-        icon: const Icon(Icons.restaurant),
+        icon: const Icon(Icons.restaurant, color: Colors.white),
+        selectedIcon: const Icon(Icons.restaurant, color: Colors.black),
         label: 'Dieta',
       ),
       NavigationDestination(
-        icon: const Icon(Icons.area_chart),
+        icon: const Icon(Icons.area_chart, color: Colors.white),
+        selectedIcon: const Icon(Icons.area_chart, color: Colors.black),
         label: 'Evolução',
       ),
       NavigationDestination(
-        icon: const Icon(Icons.person_outline),
+        icon: const Icon(Icons.person_outline, color: Colors.white),
+        selectedIcon: const Icon(Icons.person_outline, color: Colors.black),
         label: 'Perfil',
       ),
     ];
@@ -145,6 +152,7 @@ class _HomeTabsScreenState extends ConsumerState<HomeTabsScreen>
             .map(
               (d) => NavigationRailDestination(
                 icon: d.icon,
+                selectedIcon: d.selectedIcon,
                 label: Text(d.label),
               ),
             )
