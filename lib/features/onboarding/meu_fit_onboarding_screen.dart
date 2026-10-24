@@ -46,7 +46,7 @@ class _MeuFitOnboardingScreenState extends State<MeuFitOnboardingScreen> {
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
   );
 
-  Widget _number(TextEditingController controller, String label, String suffix, {bool decimal = false}) =>
+  Widget _number(TextEditingController controller, String label, String suffix, {bool decimal = false, double? min, double? max, bool allowMeters = false}) =>
       Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: TextFormField(
@@ -56,14 +56,17 @@ class _MeuFitOnboardingScreenState extends State<MeuFitOnboardingScreen> {
               ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]'))]
               : [FilteringTextInputFormatter.digitsOnly],
           decoration: _decoration(label, suffix).copyWith(
-            hintText: decimal ? 'Ex.: 82,5' : null,
-            helperText: decimal ? 'Você pode usar vírgula nos decimais' : null,
+            hintText: label.contains('altura') ? 'Ex.: 175 ou 1,75' : (decimal ? 'Ex.: 82,5' : null),
+            helperText: label.contains('altura') ? 'Informe em cm ou em metros (ex.: 175 ou 1,75)' : (decimal ? 'Você pode usar vírgula nos decimais' : null),
           ),
           validator: (value) {
             final parsed = double.tryParse((value ?? '').replaceAll(',', '.'));
             if (parsed == null || !parsed.isFinite || parsed <= 0) {
               return 'Informe um número válido';
             }
+            final normalized = allowMeters && parsed < 3 ? parsed * 100 : parsed;
+            if (min != null && normalized < min) return 'O valor mínimo é ${min.toStringAsFixed(0)}';
+            if (max != null && normalized > max) return 'O valor máximo é ${max.toStringAsFixed(0)}';
             return null;
           },
         ),
@@ -92,9 +95,9 @@ class _MeuFitOnboardingScreenState extends State<MeuFitOnboardingScreen> {
 
   Widget _page() => switch (_step) {
     0 => Column(children: [
-      _number(_age, 'Qual é a sua idade?', 'anos'),
-      _number(_weight, 'Qual é o seu peso?', 'kg', decimal: true),
-      _number(_height, 'Qual é a sua altura?', 'cm', decimal: true),
+      _number(_age, 'Qual é a sua idade?', 'anos', min: 13, max: 100),
+      _number(_weight, 'Qual é o seu peso?', 'kg', decimal: true, min: 20, max: 500),
+      _number(_height, 'Qual é a sua altura?', 'cm', decimal: true, min: 100, max: 250, allowMeters: true),
     ]),
     1 => _choice('Qual é seu objetivo?', _goal, {
       'emagrecer': 'Emagrecer',
@@ -136,6 +139,12 @@ class _MeuFitOnboardingScreenState extends State<MeuFitOnboardingScreen> {
     ]),
   };
 
+  double _parseHeightCm(String value) {
+    final parsed = double.parse(value.trim().replaceAll(',', '.'));
+    // Aceita tanto centímetros (175) quanto metros (1,75).
+    return parsed < 3 ? parsed * 100 : parsed;
+  }
+
   Future<void> _next() async {
     if (_step == 0 && !_formKey.currentState!.validate()) return;
     if (_step < 5) {
@@ -147,7 +156,7 @@ class _MeuFitOnboardingScreenState extends State<MeuFitOnboardingScreen> {
       final profile = MeuFitOnboardingProfile(
         age: int.parse(_age.text.trim()),
         weightKg: double.parse(_weight.text.trim().replaceAll(',', '.')),
-        heightCm: double.parse(_height.text.trim().replaceAll(',', '.')),
+        heightCm: _parseHeightCm(_height.text),
         goal: _goal,
         experience: _experience,
         daysPerWeek: _days,
@@ -161,8 +170,10 @@ class _MeuFitOnboardingScreenState extends State<MeuFitOnboardingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Suas informações foram salvas!')),
       );
-    } catch (_) {
-      if (mounted) setState(() => _error = 'Não foi possível salvar. Confira os dados e tente novamente.');
+    } on FormatException catch (error) {
+      if (mounted) setState(() => _error = error.message.isNotEmpty ? error.message : 'Confira idade, peso e altura e tente novamente.');
+    } catch (error) {
+      if (mounted) setState(() => _error = 'Falha ao salvar o perfil. Tente novamente. (${error.runtimeType})');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
