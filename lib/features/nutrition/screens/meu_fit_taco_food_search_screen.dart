@@ -479,6 +479,12 @@ class _MeuFitTacoFoodSearchScreenState
                   ),
                 ],
                 const SizedBox(height: 20),
+                if (query.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Text('Digite o nome de um alimento para ver resultados. A lista fica oculta até você pesquisar.',
+                      style: TextStyle(color: Colors.white60, height: 1.4)),
+                  ),
                 if (query.isNotEmpty) ...[
                 Row(children: [
                   const Expanded(child: Text('ALIMENTOS DA TACO',
@@ -531,12 +537,7 @@ class _MeuFitTacoFoodSearchScreenState
                     ),
                   );
                 }),
-                if (query.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Digite o nome de um alimento para ver resultados. A lista fica oculta até você pesquisar.', style: TextStyle(color: Colors.white60, height: 1.4)),
-                  )
-                else if (results.isEmpty)
+                if (results.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 24),
                     child: Text('Nenhum alimento encontrado com esse nome.'),
