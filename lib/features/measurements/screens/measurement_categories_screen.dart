@@ -20,7 +20,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:wger/core/wide_screen_wrapper.dart';
 import 'package:wger/features/measurements/screens/measurement_category_sort_screen.dart';
 import 'package:wger/features/measurements/widgets/categories.dart';
-import 'package:wger/features/measurements/widgets/measurement_fab.dart';
 import 'package:wger/l10n/generated/app_localizations.dart';
 
 class MeasurementCategoriesScreen extends StatelessWidget {
@@ -33,7 +32,7 @@ class MeasurementCategoriesScreen extends StatelessWidget {
     final i18n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(i18n.labelBottomNavBody),
+        title: const Text('Evolução'),
         actions: [
           IconButton(
             icon: const Icon(Icons.sort),
@@ -43,7 +42,6 @@ class MeasurementCategoriesScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: const MeasurementsFab(),
       body: const WidescreenWrapper(
         child: CategoriesList(),
       ),
