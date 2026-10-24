@@ -114,7 +114,7 @@ class MeuFitWorkoutsScreen extends ConsumerWidget {
             }
 
             final plan = const StarterWorkoutPlanner().generate(_trainingProfile(profile));
-            final schedule = _weekdaySchedules[profile.daysPerWeek] ?? _weekdays.keys.toList();
+            final schedule = _weekdaySchedules[profile.daysPerWeek] ?? List<int>.generate(profile.daysPerWeek, (i) => i);
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
@@ -156,7 +156,6 @@ class MeuFitWorkoutsScreen extends ConsumerWidget {
                   _WorkoutWeekdayCard(
                     weekday: _weekdays[schedule[i]],
                     workout: plan[i],
-                    catalog: catalog,
                     onTap: () {
                       final matches = catalog.value == null
                           ? <MeuFitExerciseMatch>[]
@@ -195,13 +194,11 @@ class _WorkoutWeekdayCard extends StatelessWidget {
   const _WorkoutWeekdayCard({
     required this.weekday,
     required this.workout,
-    required this.catalog,
     required this.onTap,
   });
 
   final String weekday;
   final PlannedWorkout workout;
-  final AsyncValue<dynamic> catalog;
   final VoidCallback onTap;
 
   @override
@@ -244,7 +241,7 @@ class _WorkoutWeekdayCard extends StatelessWidget {
                     Text(weekday, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 4),
                     Text(
-                      recovery ? 'Recuperação / descanso' : workout.title.replaceFirst(RegExp(r'^Dia \\d+ · '), ''),
+                      recovery ? 'Recuperação / descanso' : workout.title.replaceFirst(RegExp(r'^Dia \d+ · '), ''),
                       style: const TextStyle(color: Colors.white70, fontSize: 13),
                     ),
                     const SizedBox(height: 5),
