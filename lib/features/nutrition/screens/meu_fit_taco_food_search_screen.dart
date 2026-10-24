@@ -30,13 +30,16 @@ class _MeuFitTacoFoodSearchScreenState
   MeuFitOnboardingProfile? _profile;
   bool _introShown = false;
   static const _customTimesKey = 'meu_fit_custom_meal_times_v1';
+  static const _customFoodsKey = 'meu_fit_custom_meal_foods_v1';
   Map<String, List<String>> _customMealTimes = {};
+  Map<String, List<String>> _customMealFoods = {};
 
   @override
   void initState() {
     super.initState();
     _loadLoggedFoods();
     _loadCustomMealTimes();
+    _loadCustomMealFoods();
     _loadFoods();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadProfileAndShowIntro());
   }
@@ -101,6 +104,20 @@ class _MeuFitTacoFoodSearchScreenState
       ));
     } catch (_) {
       // Um registro antigo inválido não deve bloquear o cardápio.
+    }
+  }
+
+  Future<void> _loadCustomMealFoods() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_customFoodsKey);
+    if (raw == null || !mounted) return;
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      setState(() => _customMealFoods = decoded.map(
+        (key, value) => MapEntry(key, (value as List<dynamic>).map((v) => v.toString()).toList()),
+      ));
+    } catch (_) {
+      // Ignora apenas os alimentos personalizados inválidos.
     }
   }
 
@@ -210,7 +227,8 @@ class _MeuFitTacoFoodSearchScreenState
     final time = parts.first;
     final name = parts.length > 1 ? parts[1] : 'Nova refeição';
     final foodController = TextEditingController();
-    final foods = <String>[];
+    final mealKey = '$day|$entry';
+    final foods = List<String>.from(_customMealFoods[mealKey] ?? const <String>[]);
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
@@ -243,6 +261,11 @@ class _MeuFitTacoFoodSearchScreenState
       ),
     );
     foodController.dispose();
+    final updatedFoods = Map<String, List<String>>.from(_customMealFoods);
+    updatedFoods[mealKey] = foods;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_customFoodsKey, jsonEncode(updatedFoods));
+    if (mounted) setState(() => _customMealFoods = updatedFoods);
   }
 
   Widget _buildMealFoodRow(String itemText, BuildContext dialogContext) {
