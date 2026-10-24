@@ -45,12 +45,12 @@ class _MeuFitOnboardingScreenState extends State<MeuFitOnboardingScreen> {
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
   );
 
-  Widget _number(TextEditingController controller, String label, String suffix) =>
+  Widget _number(TextEditingController controller, String label, String suffix, {bool decimal = false}) =>
       Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: TextFormField(
           controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          keyboardType: TextInputType.numberWithOptions(decimal: decimal),
           decoration: _decoration(label, suffix),
           validator: (value) {
             final parsed = double.tryParse((value ?? '').replaceAll(',', '.'));
@@ -86,8 +86,8 @@ class _MeuFitOnboardingScreenState extends State<MeuFitOnboardingScreen> {
   Widget _page() => switch (_step) {
     0 => Column(children: [
       _number(_age, 'Qual é a sua idade?', 'anos'),
-      _number(_weight, 'Qual é o seu peso?', 'kg'),
-      _number(_height, 'Qual é a sua altura?', 'cm'),
+      _number(_weight, 'Qual é o seu peso?', 'kg', decimal: true),
+      _number(_height, 'Qual é a sua altura?', 'cm', decimal: true),
     ]),
     1 => _choice('Qual é seu objetivo?', _goal, {
       'emagrecer': 'Emagrecer',
