@@ -221,9 +221,8 @@ class MainApp extends ConsumerWidget {
     final userLocale = ref.watch(
       appSettingsProvider.select((s) => s.value?.userLocale),
     );
-    final useDynamicColor = ref.watch(
-      appSettingsProvider.select((s) => s.value?.useDynamicColor ?? USE_DYNAMIC_COLOR_DEFAULT),
-    );
+    // Identidade fixa do Meu Fit: preto e verde-limão, sem cores do Android.
+    const useDynamicColor = false;
 
     // Above the auth switch so the platform call is already in flight while the
     // splash screen is up. Below it, the first frame after login renders the
