@@ -156,9 +156,21 @@ class IngredientDetails extends StatelessWidget {
         if (ingredient.image?.image != null)
           IngredientImageHeader(mediaPath: ingredient.image!.image),
 
+        if (ingredient.commonName?.trim() case final commonName? when commonName.isNotEmpty) ...[
+          Text(
+            AppLocalizations.of(context).description,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          Text(commonName),
+        ],
+
         Text(
           AppLocalizations.of(context).macronutrients,
           style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        Text(AppLocalizations.of(context).nutritionPer100g),
+        Text(
+          '${(ingredient.energy * 4.184).round()} ${AppLocalizations.of(context).kJ}',
         ),
         MacronutrientsTable(
           nutritionalGoals: goals,

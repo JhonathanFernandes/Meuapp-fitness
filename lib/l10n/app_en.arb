@@ -961,6 +961,10 @@
   "@kJ": {
     "description": "Energy in a meal in kilo joules, kJ"
   },
+  "nutritionPer100g": "Values per 100 g",
+  "@nutritionPer100g": {
+    "description": "Reference amount used for the food nutrient values"
+  },
   "g": "g",
   "@g": {
     "description": "Abbreviation for gram"

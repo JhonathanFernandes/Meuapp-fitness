@@ -1944,5 +1944,9 @@
         "type": "int"
       }
     }
+  },
+  "nutritionPer100g": "Valores por 100 g",
+  "@nutritionPer100g": {
+    "description": "Reference amount used for the food nutrient values"
   }
 }

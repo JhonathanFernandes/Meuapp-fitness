@@ -69,6 +69,10 @@ class Ingredient {
   @JsonKey(required: true)
   final String name;
 
+  /// Common name/description supplied by the food catalog, when available.
+  @JsonKey(name: 'common_name')
+  final String? commonName;
+
   /// Brand of the product
   @JsonKey(name: 'brand')
   final String? brand;
@@ -141,6 +145,7 @@ class Ingredient {
     required this.id,
     required this.code,
     required this.name,
+    this.commonName,
     this.brand,
     required this.created,
     required this.energy,

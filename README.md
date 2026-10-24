@@ -42,7 +42,7 @@ Para testes, o projeto original documenta o servidor de desenvolvimento `https:/
 
 ## Idiomas
 
-Os arquivos de tradução ficam em `lib/l10n/`. O projeto original já inclui traduções `app_pt.arb` e `app_pt_BR.arb`, além de `app_en.arb`. O arquivo `app_pt_BR.arb` foi ampliado para cobrir as 559 chaves do catálogo inglês; a consistência da interface ainda depende de testes. Os identificadores e comandos técnicos do Flutter continuam em inglês para preservar a compatibilidade.
+Os arquivos de tradução ficam em `lib/l10n/`. O projeto inclui `app_pt.arb`, `app_pt_BR.arb` e `app_en.arb`. O catálogo `app_pt_BR.arb` cobre as 559 mensagens do arquivo inglês. Os identificadores e comandos técnicos do Flutter continuam em inglês para preservar a compatibilidade.
 
 ## Desenvolvimento e contribuições
 

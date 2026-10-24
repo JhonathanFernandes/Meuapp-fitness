@@ -362,6 +362,36 @@ void main() {
       expect(result.map((e) => e.id), [testSquats.id]);
     });
 
+    test('offline: all-language search checks every saved translation', () async {
+      final container = await primedContainer(isOnline: false);
+
+      final result = await container
+          .read(exercisesProvider.notifier)
+          .searchExerciseWithSearchMode(
+            'bankdrücken',
+            languageCode: 'fr',
+            searchLanguage: SearchLanguage.all,
+            searchMode: ExerciseSearchMode.exact,
+          );
+
+      expect(result.map((exercise) => exercise.id), [testBenchPress.id]);
+    });
+
+    test('offline: current-and-English search includes the English translation', () async {
+      final container = await primedContainer(isOnline: false);
+
+      final result = await container
+          .read(exercisesProvider.notifier)
+          .searchExerciseWithSearchMode(
+            'bench press',
+            languageCode: 'de',
+            searchLanguage: SearchLanguage.currentAndEnglish,
+            searchMode: ExerciseSearchMode.exact,
+          );
+
+      expect(result.map((exercise) => exercise.id), [testBenchPress.id]);
+    });
+
     test('offline: the category filter is applied after the search', () async {
       final container = await primedContainer(isOnline: false);
       final notifier = container.read(exercisesProvider.notifier);

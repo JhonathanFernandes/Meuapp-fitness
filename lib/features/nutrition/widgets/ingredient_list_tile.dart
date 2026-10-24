@@ -7,7 +7,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * wger Workout Manager is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -45,9 +45,9 @@ class IngredientListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final i18n = AppLocalizations.of(context);
-    const double imgSize = 60;
-    final String macros =
-        'P: ${ingredient.protein}g / C: ${ingredient.carbohydrates}g / G: ${ingredient.fat}g';
+    const imgSize = 60.0;
+    final description = ingredient.commonName?.trim();
+    final energyKj = (ingredient.energy * 4.184).round();
     final sourceName = ingredient.sourceName?.trim();
     final hasSource = sourceName != null && sourceName.isNotEmpty;
     final hasSourceUrl = ingredient.sourceUrl?.trim().isNotEmpty ?? false;
@@ -73,25 +73,33 @@ class IngredientListTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '${i18n.kcalValue(ingredient.energy.toString())} • $macros / 100 g',
+            description == null || description.isEmpty
+                ? i18n.noDataAvailable
+                : '${i18n.description}: $description',
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          if (hasSource)
-            Text(
-              'Fonte: $sourceName',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall,
-            )
-          else
-            Text(
-              'Fonte nutricional não informada',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+          Text(
+            '${i18n.energy}: ${i18n.kcalValue(ingredient.energy.toString())} '
+            '($energyKj ${i18n.kJ}) • ${i18n.nutritionPer100g}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            '${i18n.protein}: ${i18n.gValue(ingredient.protein.toString())} • '
+            '${i18n.carbohydrates}: ${i18n.gValue(ingredient.carbohydrates.toString())} • '
+            '${i18n.fat}: ${i18n.gValue(ingredient.fat.toString())}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            hasSource ? 'Fonte: $sourceName' : 'Fonte nutricional não informada',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: hasSource ? null : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
+          ),
         ],
       ),
       trailing: hasSourceUrl

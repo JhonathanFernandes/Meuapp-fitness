@@ -382,7 +382,10 @@ void main() {
     });
 
     test('parses results into Ingredient list', () async {
-      final ingredientJson = jsonDecode(fixture('nutrition/ingredientinfo_10065.json'));
+      final ingredientJson = {
+        ...jsonDecode(fixture('nutrition/ingredientinfo_10065.json')) as Map<String, dynamic>,
+        'common_name': 'Orange marmalade',
+      };
       when(mockBase.makeUrl('ingredientinfo', query: anyNamed('query'))).thenReturn(uri);
       when(mockBase.fetch(uri, timeout: anyNamed('timeout'))).thenAnswer(
         (_) async => {
@@ -394,6 +397,7 @@ void main() {
 
       expect(result, hasLength(1));
       expect(result.single.id, 10065);
+      expect(result.single.commonName, 'Orange marmalade');
     });
   });
 

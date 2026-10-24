@@ -18,6 +18,7 @@
 
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
@@ -30,13 +31,13 @@ const _arbDir = 'lib/l10n';
 const _iosPlist = 'ios/Runner/Info.plist';
 const _androidXml = 'android/app/src/main/res/xml/locales_config.xml';
 
-/// Verifies that every place which enumerates the app's supported locales
-/// agrees with the canonical list derived from `lib/l10n/app_*.arb` filenames.
+/// Verifies locale configuration and complete Brazilian Portuguese coverage.
 ///
 /// Checks:
 ///   - `ios/Runner/Info.plist`
 ///   - `android/app/src/main/res/xml/locales_config.xml`
 ///   - `languageNativeNames` in `lib/l10n/language_native_names.dart`
+///   - all English-template messages in `app_pt_BR.arb`
 ///
 /// Run `dart run tool/check_locales.dart` to check,
 /// or `dart run tool/check_locales.dart --fix` to rewrite the iOS/Android lists
@@ -59,17 +60,39 @@ void main(List<String> args) {
   drift |= _checkPlist(dashForm, fix: fix);
   drift |= _checkAndroidXml(dashForm, fix: fix);
   drift |= _checkLanguageDartCoverage(underscoreForm);
+  drift |= _checkPortugueseBrazilCoverage();
 
   if (drift) {
     if (fix) {
-      stdout.writeln('\nFixed drifted files. Re-run without --fix to verify.');
+      stdout.writeln('\nAuto-fix applied where available. Re-run without --fix to verify.');
     } else {
-      stderr.writeln('\nLocale lists are out of sync. Re-run with --fix to update.');
+      stderr.writeln('\nLocale configuration or pt-BR translation coverage is out of sync.');
       exit(1);
     }
   } else {
-    stdout.writeln('\nAll locale lists match (${canonical.length} locales).');
+    stdout.writeln('\nAll locale checks passed (${canonical.length} locales).');
   }
+}
+
+/// Brazilian Portuguese is the app's default locale, so it must provide every
+/// user-facing message from the English template instead of silently showing
+/// English for newly added features.
+bool _checkPortugueseBrazilCoverage() {
+  final template =
+      jsonDecode(File('$_arbDir/app_en.arb').readAsStringSync()) as Map<String, dynamic>;
+  final translation =
+      jsonDecode(File('$_arbDir/app_pt_BR.arb').readAsStringSync()) as Map<String, dynamic>;
+  final messages = template.keys.where((key) => !key.startsWith('@')).toSet();
+  final translatedMessages = translation.keys.where((key) => !key.startsWith('@')).toSet();
+  final missing = messages.difference(translatedMessages).toList()..sort();
+
+  if (missing.isEmpty) {
+    stdout.writeln('[pt_BR] OK (${messages.length} translated messages)');
+    return false;
+  }
+
+  stderr.writeln('[pt_BR] missing translations: ${missing.join(', ')}');
+  return true;
 }
 
 /// Canonical locale list from `app_<tag>.arb` filenames. Returns tags in

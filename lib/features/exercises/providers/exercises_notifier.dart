@@ -106,7 +106,11 @@ class Exercises extends _$Exercises {
             .read(exerciseRepositoryProvider)
             .searchExerciseServer(term, languageCode: languageCode, searchEnglish: searchEnglish);
         // Inclui nomes brasileiros locais que o índice remoto não conhece.
-        final local = await _searchExerciseLocal(term, languageCode: languageCode, searchEnglish: searchEnglish);
+        final local = await _searchExerciseLocal(
+          term,
+          languageCode: languageCode,
+          searchEnglish: searchEnglish,
+        );
         final matchedIds = {...ids, ...local.map((exercise) => exercise.id)};
         return _exercises.where((e) => matchedIds.contains(e.id)).toList();
       },
@@ -150,18 +154,25 @@ class Exercises extends _$Exercises {
         return _exercises.where((e) => ids.contains(e.id)).toList();
       },
       local: () async {
-        final searchEnglish = searchLanguage == SearchLanguage.currentAndEnglish;
-        var results = await _searchExerciseLocal(
-          term,
-          languageCode: languageCode,
-          searchEnglish: searchEnglish,
-        );
-        if (searchMode == ExerciseSearchMode.exact) {
-          final lower = term.toLowerCase();
-          results = results.where((e) {
-            return e.getTranslation(languageCode).name.toLowerCase() == lower;
-          }).toList();
-        }
+        final lowerTerm = term.toLowerCase();
+        final languages = switch (searchLanguage) {
+          SearchLanguage.current => {languageCode.split('-').first},
+          SearchLanguage.currentAndEnglish => {languageCode.split('-').first, 'en'},
+          SearchLanguage.all => null,
+        };
+        var results = _exercises.where((exercise) {
+          final translations = languages == null
+              ? exercise.translations
+              : exercise.translations.where(
+                  (translation) => languages.contains(translation.language.shortName),
+                );
+          return translations.any((translation) {
+            final name = translation.name.toLowerCase();
+            return searchMode == ExerciseSearchMode.exact
+                ? name == lowerTerm
+                : name.contains(lowerTerm);
+          });
+        }).toList();
         if (categories.isNotEmpty) {
           results = results.where((e) => categories.contains(e.category)).toList();
         }
