@@ -18,7 +18,6 @@
 
 import 'package:material_ui/material_ui.dart';
 import 'package:video_player/video_player.dart';
-import 'package:wger/core/platform.dart';
 import 'package:wger/features/exercises/models/exercise.dart';
 import 'package:wger/features/exercises/widgets/videos.dart';
 
@@ -29,32 +28,30 @@ class VideosSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isDesktop) {
-      return const SizedBox.shrink();
-    }
+    final localizedName =
+        exercise.getTranslation(Localizations.localeOf(context).languageCode).name;
+    final englishName = exercise.getTranslation('en').name;
 
-    if (exercise.videos.isEmpty) {
-      final localizedName = exercise.getTranslation(Localizations.localeOf(context).languageCode).name;
-      final englishName = exercise.getTranslation('en').name;
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Vídeo de execução', style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            _ExerciseDemoPlayer(exerciseName: localizedName, englishName: englishName),
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ...exercise.videos.map((v) => ExerciseVideoWidget(video: v)),
-        const SizedBox(height: 9),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Vídeo de execução',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          if (exercise.videos.isNotEmpty)
+            ...exercise.videos.map((video) => ExerciseVideoWidget(video: video))
+          else
+            _ExerciseDemoPlayer(
+              exerciseName: localizedName,
+              englishName: englishName,
+            ),
+          const SizedBox(height: 9),
+        ],
+      ),
     );
   }
 }
