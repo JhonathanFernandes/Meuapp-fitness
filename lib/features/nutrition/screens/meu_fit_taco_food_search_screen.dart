@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wger/features/onboarding/meu_fit_onboarding_profile.dart';
 
 /// Pesquisa a TACO 4ª edição através da API estática pública.
 /// Valores retornados pela fonte são expressos por 100 g de parte comestível.
@@ -26,12 +27,15 @@ class _MeuFitTacoFoodSearchScreenState
   String? _error;
   List<Map<String, dynamic>> _loggedFoods = [];
   bool _saving = false;
+  MeuFitOnboardingProfile? _profile;
+  bool _introShown = false;
 
   @override
   void initState() {
     super.initState();
     _loadLoggedFoods();
     _loadFoods();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadProfileAndShowIntro());
   }
 
   @override
@@ -43,6 +47,69 @@ class _MeuFitTacoFoodSearchScreenState
 
 
   static const _logsKey = 'meu_fit_taco_food_logs_v1';
+
+  Future<void> _loadProfileAndShowIntro() async {
+    final profile = await MeuFitOnboardingStorage().load();
+    if (!mounted) return;
+    setState(() => _profile = profile);
+    if (_introShown) return;
+    _introShown = true;
+    final water = profile == null ? null : (profile.weightKg * 0.03).clamp(1.5, 4.0);
+    final bmi = profile == null ? null : profile.weightKg / ((profile.heightCm / 100) * (profile.heightCm / 100));
+    await showDialog<void>(context: context, builder: (dialogContext) => AlertDialog(
+      backgroundColor: const Color(0xFF202020),
+      icon: const Icon(Icons.restaurant_menu_rounded, color: Color(0xFFC9F31D), size: 34),
+      title: const Text('Seu guia de alimentação', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFFC9F31D), fontWeight: FontWeight.w900)),
+      content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(profile == null ? 'Veja um exemplo de cardápio simples e econômico. Complete seu peso e altura no perfil para personalizar as estimativas.' : 'Estas estimativas usam os dados informados no seu perfil. São orientações iniciais e não substituem avaliação nutricional.', style: const TextStyle(color: Colors.white70, height: 1.45)),
+        const SizedBox(height: 14),
+        if (water != null) _introMetric(Icons.water_drop_outlined, 'Água: cerca de ' + water.toStringAsFixed(1).replaceAll('.', ',') + ' L/dia', 'Estimativa inicial; clima, exercício e condições de saúde alteram a necessidade.'),
+        const SizedBox(height: 10),
+        _introMetric(Icons.schedule_rounded, 'Exemplo: 5 refeições ao dia', 'Café da manhã, lanche, almoço, lanche da tarde e jantar. Ajuste conforme sua fome e rotina.'),
+        if (bmi != null) ...[const SizedBox(height: 10), _introMetric(Icons.monitor_weight_outlined, 'IMC calculado: ' + bmi.toStringAsFixed(1).replaceAll('.', ','), 'Indicador de triagem; não define sozinho a dieta ideal nem o estado de saúde.')],
+        const SizedBox(height: 14),
+        const Text('O cardápio prioriza arroz, feijão, ovos, frango, frutas e legumes, seguindo o Guia Alimentar para a População Brasileira.', style: TextStyle(color: Colors.white70, height: 1.45, fontSize: 12)),
+      ])),
+      actions: [TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Ver meu cardápio', style: TextStyle(color: Color(0xFFC9F31D), fontWeight: FontWeight.bold)))],
+    ));
+  }
+
+  Widget _introMetric(IconData icon, String title, String detail) => Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Icon(icon, color: const Color(0xFFC9F31D), size: 22), const SizedBox(width: 10),
+    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)), const SizedBox(height: 3), Text(detail, style: const TextStyle(color: Colors.white60, fontSize: 12, height: 1.35))]))
+  ]);
+
+  static const List<Map<String, dynamic>> _weeklyMenu = [
+    {'day':'Segunda-feira','meals':[['07:30','Café da manhã','Aveia 40 g, leite 200 ml e banana 1 unidade'],['10:30','Lanche','Mamão 150 g e amendoim 15 g'],['12:30','Almoço','Arroz cozido 100 g, feijão 100 g, frango 100 g e salada 100 g'],['16:00','Lanche da tarde','Pão 50 g e ovo cozido 1 unidade'],['19:30','Jantar','Arroz 80 g, feijão 80 g, omelete com 2 ovos e legumes 100 g']]},
+    {'day':'Terça-feira','meals':[['07:30','Café da manhã','Pão 50 g, 2 ovos e mamão 100 g'],['10:30','Lanche','Banana 1 unidade e aveia 15 g'],['12:30','Almoço','Arroz 100 g, feijão 100 g, carne moída magra 100 g e cenoura 100 g'],['16:00','Lanche da tarde','Iogurte natural 170 g e aveia 20 g'],['19:30','Jantar','Batata cozida 180 g, frango 100 g e salada 100 g']]},
+    {'day':'Quarta-feira','meals':[['07:30','Café da manhã','Cuscuz cozido 150 g e 2 ovos'],['10:30','Lanche','Laranja 1 unidade e amendoim 15 g'],['12:30','Almoço','Arroz 100 g, feijão 100 g, sardinha 100 g e couve 80 g'],['16:00','Lanche da tarde','Pão 50 g e queijo branco 30 g'],['19:30','Jantar','Sopa caseira de legumes 300 g com frango 80 g']]},
+    {'day':'Quinta-feira','meals':[['07:30','Café da manhã','Aveia 40 g, leite 200 ml e maçã 1 unidade'],['10:30','Lanche','Banana 1 unidade e amendoim 15 g'],['12:30','Almoço','Arroz 100 g, feijão 100 g, frango 100 g e abóbora 100 g'],['16:00','Lanche da tarde','Iogurte natural 170 g e mamão 100 g'],['19:30','Jantar','Omelete com 2 ovos, batata 150 g e salada 100 g']]},
+    {'day':'Sexta-feira','meals':[['07:30','Café da manhã','Pão 50 g, 2 ovos e banana 1 unidade'],['10:30','Lanche','Laranja 1 unidade e aveia 15 g'],['12:30','Almoço','Arroz 100 g, feijão 100 g, carne magra 100 g e salada 100 g'],['16:00','Lanche da tarde','Mandioca cozida 100 g e ovo cozido 1 unidade'],['19:30','Jantar','Arroz 80 g, feijão 80 g, sardinha 100 g e legumes 100 g']]}
+  ];
+
+  Widget _weeklyMenuSection() {
+    const lime = Color(0xFFC9F31D);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('SEU CARDÁPIO DA SEMANA', style: TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.1)),
+      const SizedBox(height: 5), const Text('Toque em um dia para abrir as refeições', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
+      const SizedBox(height: 10),
+      ..._weeklyMenu.map((day) => Card(color: const Color(0xFF202020), margin: const EdgeInsets.only(bottom: 8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)), child: ExpansionTile(
+        leading: const Icon(Icons.calendar_today_rounded, color: lime), title: Text(day['day'] as String, style: const TextStyle(fontWeight: FontWeight.w800)),
+        subtitle: const Text('5 refeições · exemplo econômico', style: TextStyle(color: Colors.white60, fontSize: 12)),
+        children: [for (final meal in day['meals'] as List<List<String>>) Padding(padding: const EdgeInsets.fromLTRB(16, 5, 16, 12), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          SizedBox(width: 48, child: Text(meal[0], style: const TextStyle(color: lime, fontWeight: FontWeight.w800, fontSize: 12)),), const SizedBox(width: 8),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(meal[1], style: const TextStyle(fontWeight: FontWeight.w800)), const SizedBox(height: 3), Text(meal[2], style: const TextStyle(color: Colors.white70, height: 1.35, fontSize: 12))]))
+        ]))],
+      ))),
+      const SizedBox(height: 6),
+      const Text('Porções ilustrativas, não uma prescrição individual. Calorias e proporções de nutrientes dependem de idade, atividade, objetivo, preferências e condições de saúde. Para metas precisas, procure nutricionista.', style: TextStyle(color: Colors.white54, fontSize: 11, height: 1.4)),
+      const SizedBox(height: 8),
+      const Text('Referência: Ministério da Saúde — Guia Alimentar para a População Brasileira.', style: TextStyle(color: Colors.white60, fontSize: 11)),
+      const SizedBox(height: 3),
+      const SelectableText('https://www.gov.br/saude/pt-br/assuntos/saude-brasil/publicacoes-para-promocao-a-saude/guia_alimentar_populacao_brasileira_2ed.pdf', style: TextStyle(color: lime, fontSize: 10)),
+      const SizedBox(height: 18),
+    ]);
+  }
 
   Future<void> _loadLoggedFoods() async {
     final prefs = await SharedPreferences.getInstance();
@@ -191,11 +258,11 @@ class _MeuFitTacoFoodSearchScreenState
   Widget build(BuildContext context) {
     const lime = Color(0xFFC9F31D);
     final query = _searchController.text.trim().toLowerCase();
-    final results = _foods.where((food) {
+    final results = query.isEmpty ? <Map<String, dynamic>>[] : _foods.where((food) {
       final description = (food['description'] ?? '').toString().toLowerCase();
       final category = (food['category'] ?? '').toString().toLowerCase();
       return query.isEmpty || description.contains(query) || category.contains(query);
-    }).take(100).toList();
+    }).take(20).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -257,6 +324,7 @@ class _MeuFitTacoFoodSearchScreenState
                   ),
                 ),
                 const SizedBox(height: 22),
+                _weeklyMenuSection(),
                 const Text('ENCONTRE SEU ALIMENTO',
                   style: TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
                 const SizedBox(height: 5),
@@ -411,6 +479,7 @@ class _MeuFitTacoFoodSearchScreenState
                   ),
                 ],
                 const SizedBox(height: 20),
+                if (query.isNotEmpty) ...[
                 Row(children: [
                   const Expanded(child: Text('ALIMENTOS DA TACO',
                     style: TextStyle(color: lime, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
@@ -462,11 +531,17 @@ class _MeuFitTacoFoodSearchScreenState
                     ),
                   );
                 }),
-                if (results.isEmpty)
+                if (query.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Text('Digite o nome de um alimento para ver resultados. A lista fica oculta até você pesquisar.', style: TextStyle(color: Colors.white60, height: 1.4)),
+                  )
+                else if (results.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 24),
                     child: Text('Nenhum alimento encontrado com esse nome.'),
                   ),
+                ],
                 const SizedBox(height: 20),
                 const Text(
                   'Referência: TACO, 4ª edição (NEPA/UNICAMP). Os valores são por '
