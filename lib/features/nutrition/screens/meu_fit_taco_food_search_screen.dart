@@ -244,7 +244,7 @@ class _MeuFitTacoFoodSearchScreenState
               const Text('Alimentos deste horário', style: TextStyle(fontWeight: FontWeight.w800)),
               const SizedBox(height: 8),
               for (final part in parts)
-                _buildMealFoodRow(part, dialogContext),
+                _buildMealFoodRow(part, dialogContext, storageKey: '$day|${effectiveMeal[0]}|${effectiveMeal[1]}|$part'),
               const SizedBox(height: 12),
               const Text(
                 'A tabela apresenta valores por 100 g quando o alimento é encontrado na base TACO. Para itens sem correspondência exata, pesquise o nome no catálogo abaixo e confira o preparo antes de usar os valores.',
@@ -299,7 +299,7 @@ class _MeuFitTacoFoodSearchScreenState
               ),
               const SizedBox(height: 8),
               if (foods.isEmpty) const Text('Adicione alimentos a este horário. Depois, toque em cada alimento para pesquisar a tabela nutricional.', style: TextStyle(color: Colors.white70)),
-              for (final food in foods) _buildMealFoodRow(food, dialogContext),
+              for (final food in foods) _buildMealFoodRow(food, dialogContext, storageKey: '$mealKey|$food'),
             ]),
           ),
           actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Fechar'))],
@@ -314,8 +314,9 @@ class _MeuFitTacoFoodSearchScreenState
     if (mounted) setState(() => _customMealFoods = updatedFoods);
   }
 
-  Widget _buildMealFoodRow(String itemText, BuildContext dialogContext) {
-    final confirmed = _confirmedMealFoods[itemText];
+  Widget _buildMealFoodRow(String itemText, BuildContext dialogContext, {String? storageKey}) {
+    final key = storageKey ?? itemText;
+    final confirmed = _confirmedMealFoods[key];
     final food = confirmed == null ? null : _foods.cast<Map<String, dynamic>?>().firstWhere(
       (entry) => entry?['id'] == confirmed['foodId'],
       orElse: () => null,
@@ -339,13 +340,13 @@ class _MeuFitTacoFoodSearchScreenState
         trailing: IconButton(
           tooltip: 'Selecionar alimento exato na TACO',
           icon: Icon(food != null && grams != null ? Icons.edit : Icons.search, color: const Color(0xFFC9F31D)),
-          onPressed: () => _chooseTacoFoodForMeal(itemText, dialogContext),
+          onPressed: () => _chooseTacoFoodForMeal(itemText, dialogContext, storageKey: key),
         ),
       ),
     );
   }
 
-  Future<void> _chooseTacoFoodForMeal(String itemText, BuildContext parentDialogContext) async {
+  Future<void> _chooseTacoFoodForMeal(String itemText, BuildContext parentDialogContext, {required String storageKey}) async {
     final searchController = TextEditingController(
       text: itemText.replaceAll(RegExp(r'\d+(?:[.,]\d+)?\s*(?:g|ml|unidade|unidades|ovo|ovos)?', caseSensitive: false), ' ').trim(),
     );
@@ -424,7 +425,7 @@ class _MeuFitTacoFoodSearchScreenState
                     : () {
                         final picked = selected!;
                         final confirmed = Map<String, Map<String, dynamic>>.from(_confirmedMealFoods);
-                        confirmed[itemText] = {
+                        confirmed[storageKey] = {
                           'foodId': picked['id'],
                           'name': (picked['description'] ?? 'Alimento').toString(),
                           'grams': grams,
