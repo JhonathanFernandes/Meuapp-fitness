@@ -53,8 +53,10 @@ String getServerStringTranslation(String value, BuildContext context) {
       'None': 'Sem equipamento',
       'none (bodyweight exercise)': 'Sem equipamento (peso corporal)',
     };
-    final translated = portugueseTerms[value] ?? portugueseTerms[value.trim()];
-    if (translated != null) return translated;
+    final normalizedValue = value.trim().toLowerCase();
+    for (final entry in portugueseTerms.entries) {
+      if (entry.key.toLowerCase() == normalizedValue) return entry.value;
+    }
   }
 
   switch (value) {
