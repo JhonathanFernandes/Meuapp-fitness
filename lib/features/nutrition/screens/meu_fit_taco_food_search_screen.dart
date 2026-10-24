@@ -330,12 +330,14 @@ class _MeuFitTacoFoodSearchScreenState
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         title: Text(itemText, style: const TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: Text(
-          food != null && grams != null
-              ? 'TACO confirmado: ${food['description']} · ${grams.toStringAsFixed(grams == grams.roundToDouble() ? 0 : 1).replaceAll('.', ',')} g\n${n(food['energy_kcal'])} kcal · proteína ${n(food['protein_g'])} g · carboidratos ${n(food['carbohydrate_g'])} g · gorduras ${n(food['lipids_g'])} g · fibras ${n(food['dietary_fiber_g'])} g · sódio ${n(food['sodium_mg'])} mg'
-              : 'Ainda sem correspondência confirmada. Escolha o alimento exato na TACO e informe a quantidade em gramas; não será presumido o peso de unidades.',
-          style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.45),
-        ),
+        subtitle: food != null && grams != null
+            ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('TACO confirmado: ${food['description']} · ${grams.toStringAsFixed(grams == grams.roundToDouble() ? 0 : 1).replaceAll('.', ',')} g',
+                  style: const TextStyle(color: Color(0xFFC9F31D), fontSize: 12, fontWeight: FontWeight.w700)),
+                ..._allNutrientRows(food, grams),
+              ])
+            : const Text('Ainda sem correspondência confirmada. Escolha o alimento exato na TACO e informe a quantidade em gramas; não será presumido o peso de unidades.',
+                style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.45)),
         isThreeLine: true,
         trailing: IconButton(
           tooltip: 'Selecionar alimento exato na TACO',
@@ -410,8 +412,7 @@ class _MeuFitTacoFoodSearchScreenState
                   Text((selected!['description'] ?? 'Alimento').toString(),
                     style: const TextStyle(color: Color(0xFFC9F31D), fontWeight: FontWeight.w800)),
                   const SizedBox(height: 8),
-                  Text('${n(selected!['energy_kcal'])} kcal  ·  Proteína ${n(selected!['protein_g'])} g\nCarboidratos ${n(selected!['carbohydrate_g'])} g  ·  Gorduras ${n(selected!['lipids_g'])} g\nFibras ${n(selected!['dietary_fiber_g'])} g  ·  Sódio ${n(selected!['sodium_mg'])} mg',
-                    style: const TextStyle(height: 1.5)),
+                  ..._allNutrientRows(selected!, grams ?? 100),
                   const SizedBox(height: 8),
                   TextButton(onPressed: () => setDialogState(() => selected = null), child: const Text('Escolher outro alimento')),
                 ],
@@ -855,14 +856,7 @@ class _MeuFitTacoFoodSearchScreenState
                             style: const TextStyle(color: lime, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          _nutrientRow('Energia', _portion(_selectedFood!['energy_kcal']), 'kcal'),
-                          _nutrientRow('Proteínas', _portion(_selectedFood!['protein_g']), 'g'),
-                          _nutrientRow('Carboidratos', _portion(_selectedFood!['carbohydrate_g']), 'g'),
-                          _nutrientRow('Lipídeos', _portion(_selectedFood!['lipids_g']), 'g'),
-                          _nutrientRow('Fibras', _portion(_selectedFood!['dietary_fiber_g']), 'g'),
-                          _nutrientRow('Sódio', _portion(_selectedFood!['sodium_mg']), 'mg'),
-                          _nutrientRow('Cálcio', _portion(_selectedFood!['calcium_mg']), 'mg'),
-                          _nutrientRow('Ferro', _portion(_selectedFood!['iron_mg']), 'mg'),
+                          ..._allNutrientRows(_selectedFood!, _grams),
                           const SizedBox(height: 12),
                           SizedBox(
                             width: double.infinity,
@@ -1015,6 +1009,47 @@ class _MeuFitTacoFoodSearchScreenState
               ],
             ),
     );
+  }
+
+  List<Widget> _allNutrientRows(Map<String, dynamic> food, double grams) {
+    const nutrients = <(String, String, String)>[
+      ('moisture_g', 'Água', 'g'),
+      ('energy_kcal', 'Energia', 'kcal'),
+      ('energy_kj', 'Energia', 'kJ'),
+      ('protein_g', 'Proteínas', 'g'),
+      ('lipids_g', 'Lipídeos totais', 'g'),
+      ('cholesterol_mg', 'Colesterol', 'mg'),
+      ('carbohydrate_g', 'Carboidratos', 'g'),
+      ('dietary_fiber_g', 'Fibra alimentar', 'g'),
+      ('ashes_g', 'Cinzas', 'g'),
+      ('calcium_mg', 'Cálcio', 'mg'),
+      ('magnesium_mg', 'Magnésio', 'mg'),
+      ('manganese_mg', 'Manganês', 'mg'),
+      ('phosphorus_mg', 'Fósforo', 'mg'),
+      ('iron_mg', 'Ferro', 'mg'),
+      ('sodium_mg', 'Sódio', 'mg'),
+      ('potassium_mg', 'Potássio', 'mg'),
+      ('copper_mg', 'Cobre', 'mg'),
+      ('zinc_mg', 'Zinco', 'mg'),
+      ('retinol_mcg', 'Retinol', 'µg'),
+      ('re_mcg', 'Equivalentes de retinol (RE)', 'µg'),
+      ('rae_mcg', 'Equivalentes de atividade de retinol (RAE)', 'µg'),
+      ('thiamine_mg', 'Tiamina (B1)', 'mg'),
+      ('riboflavin_mg', 'Riboflavina (B2)', 'mg'),
+      ('pyridoxine_mg', 'Piridoxina (B6)', 'mg'),
+      ('niacin_mg', 'Niacina (B3)', 'mg'),
+      ('vitamin_c_mg', 'Vitamina C', 'mg'),
+    ];
+    return nutrients
+        .where((item) => food[item.$1] is num)
+        .map((item) => _nutrientRow(
+              item.$2,
+              ((food[item.$1] as num) * grams / 100)
+                  .toStringAsFixed(2)
+                  .replaceAll('.', ','),
+              item.$3,
+            ))
+        .toList();
   }
 
   Widget _nutrientRow(String label, String value, String unit) {
