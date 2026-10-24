@@ -137,10 +137,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(child: _MetricCard(icon: Icons.fitness_center_rounded, label: 'EXERCÍCIOS', value: totalExercises.toString(), unit: 'no plano')),
               ]),
               const SizedBox(height: 24),
-              Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                const Expanded(child: _SectionHeading(title: 'PLANO DE TREINO', subtitle: 'Preparado para seu perfil')),
-                if (plan.isNotEmpty) Text(plan.length.toString() + ' dias', style: const TextStyle(color: _lime, fontSize: 12, fontWeight: FontWeight.bold)),
-              ]),
+              InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const MeuFitWorkoutsScreen())),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                    const Expanded(child: _SectionHeading(title: 'PLANO DE TREINO', subtitle: 'Toque para abrir os dias e os exercícios')),
+                    if (plan.isNotEmpty) Text(plan.length.toString() + ' dias', style: const TextStyle(color: _lime, fontSize: 12, fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: _lime, size: 13),
+                  ]),
+                ),
+              ),
               const SizedBox(height: 12),
               if (needsReview)
                 Container(
