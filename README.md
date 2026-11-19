@@ -2,6 +2,18 @@
 
 Aplicativo de acompanhamento de treinos, exercícios, alimentação, medidas corporais e peso, baseado no projeto de código aberto [wger](https://github.com/wger-project/flutter).
 
+## Capturas de tela
+
+Telas do aplicativo: Início, Treinos, Dieta e Evolução.
+
+![Tela inicial do Meu Fit](screenshots/inicio.jpg)
+
+![Tela de treinos do Meu Fit](screenshots/treinos.jpg)
+
+![Tela de dieta do Meu Fit](screenshots/dieta.jpg)
+
+![Tela de evolução do Meu Fit](screenshots/evolucao.jpg)
+
 ## Objetivo da personalização
 
 Esta ramificação adapta a experiência para português brasileiro como idioma inicial, mantendo a possibilidade de alternar para inglês pela tela inicial (Home). A preferência de idioma é armazenada no dispositivo.
